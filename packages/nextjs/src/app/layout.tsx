@@ -2,14 +2,14 @@ import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
-import "@rainbow-me/rainbowkit/styles.css";
-import { TemplateAppWithProviders } from "@/components/template-provider";
+import { TokenizationAppWithProviders } from "@/components/template-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Forkable Next.js Template",
-  description: "A template for Next.js with UP provider and Wagmi and supabase",
+  title: "FamilyLYX: Tokenize your products",
+  description:
+    "Discover the power of tokenization with FamilyLYX. Transform your products into unique digital assets, enhancing ownership and value.",
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <TemplateAppWithProviders>{children}</TemplateAppWithProviders>
+        <TokenizationAppWithProviders>{children}</TokenizationAppWithProviders>
       </body>
     </html>
   );
