@@ -10,7 +10,6 @@ export default function Home() {
         </h2>
       </div>
 
-      {/* Headline */}
       <div className="mb-4 text-[64px]  leading-tight">
         <h1 className="font-extrabold">
           <span className="text-[#FF0000]">Tokenise</span>{" "}
@@ -19,7 +18,6 @@ export default function Home() {
         <h1 className="font-extrabold font-display">Products</h1>
       </div>
 
-      {/* Button */}
       <BlackButton
         onClick={() => {
           window.open("https://app.familylyx.com", "_blank");
