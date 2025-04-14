@@ -1,29 +1,60 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-// Modules
-import {LSP7DigitalAsset as LSP7} from "@lukso/lsp7-contracts/contracts/LSP7DigitalAsset.sol";
-import {LSP7Burnable} from "@lukso/lsp7-contracts/contracts/extensions/LSP7Burnable.sol";
+contract DPPNFT is Initializable, LSP8MintableInit, LSP8BurnableInit {
+    bytes32 internal constant UID_HASH_KEY = keccak256("DPP_UID_Hash");
 
-// Constants
-import {_LSP4_TOKEN_TYPE_TOKEN} from "@lukso/lsp4-contracts/contracts/LSP4Constants.sol";
-
-/// @dev Basic Example of an LSP7 Token to get started
-/// Technical Specification:  https://github.com/lukso-network/LIPs/blob/main/LSPs/LSP-7-DigitalAsset.md
-/// Documentation: https://docs.lukso.tech/contracts/overview/Token/create-token
-contract ExampleLSP7Token is LSP7, LSP7Burnable {
-    constructor(
-        string memory name,
-        string memory symbol,
-        address contractOwner,
-        bool isNonDivisible // whether the token should be divisible (18 decimals) or not (0
-    )
-        // decimals)
-        LSP7(name, symbol, contractOwner, _LSP4_TOKEN_TYPE_TOKEN, isNonDivisible)
-    {
-        // mint all the tokens to the deployer, who can then distribute them using `transfer(...)`
-        _mint(msg.sender, 10_000_000 * 10 ** decimals(), true, "0x");
+    function initialize(
+        string memory name_,
+        string memory symbol_,
+        address newOwner_
+    ) public initializer {
+        LSP8MintableInit_init(name_, symbol_, newOwner_, true);
     }
 
-    // Your custom token contract logic here...
+    /// @notice Mint DPP NFT with associated metadata and UID hash
+    function mintDPP(
+        address to,
+        bytes32 tokenId,
+        string memory plainUidCode,
+        bytes memory lsp4Metadata
+    ) public onlyOwner {
+        _mint(to, tokenId, true, "");
+
+        // Store LSP4 metadata (public)
+        _setData(_generateDataKey(tokenId, _LSP4_METADATA_KEY), lsp4Metadata);
+
+        // Store UID hash (private)
+        bytes32 uidHash = keccak256(abi.encodePacked(plainUidCode));
+        _setData(
+            _generateDataKey(tokenId, UID_HASH_KEY),
+            abi.encodePacked(uidHash)
+        );
+    }
+
+    /// @notice Overridden transfer requiring UID verification
+    function transferWithUidCheck(
+        address from,
+        address to,
+        bytes32 tokenId,
+        string memory plainUidCode,
+        bool force,
+        bytes memory data
+    ) public {
+        bytes32 expectedHash = keccak256(abi.encodePacked(plainUidCode));
+        bytes32 storedHash = bytes32(
+            getData(_generateDataKey(tokenId, UID_HASH_KEY))
+        );
+        require(expectedHash == storedHash, "Invalid UID code");
+
+        // Perform standard LSP8 transfer
+        transfer(from, to, tokenId, force, data);
+    }
+
+    function _generateDataKey(
+        bytes32 tokenId,
+        bytes32 dataKeyPrefix
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(dataKeyPrefix, tokenId));
+    }
 }
