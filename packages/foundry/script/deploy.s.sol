@@ -1,15 +1,20 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
 import {Script, console} from "forge-std/Script.sol";
-import {ExampleLSP7Token} from "../src/ExampleLSP7Token.sol";
+import {DPPNFT} from "../src/DPPNFT.sol";
 
-contract DeployScript is Script {
+contract DeployDPPNFT is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address deployer = vm.addr(deployerPrivateKey);
+
         vm.startBroadcast(deployerPrivateKey);
 
-        new ExampleLSP7Token("Example Token", "TKN", msg.sender, false);
+        DPPNFT nft = new DPPNFT("DPP NFT", "DPP", deployer);
+
+        console.log("Deployed DPPNFT at:", address(nft));
+        console.log("Owner set to:", deployer);
 
         vm.stopBroadcast();
     }
