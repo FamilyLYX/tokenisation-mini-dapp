@@ -10,7 +10,6 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 export default function ImportantNotice() {
   const { push } = useRouter();
@@ -20,13 +19,12 @@ export default function ImportantNotice() {
   const generateCode = () => {
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     setCode(newCode);
-    localStorage.setItem("unique-6digit-code", newCode);
+    localStorage.setItem("product-code", newCode);
     setOpen(true);
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(code);
-    toast.success("Code copied to clipboard! Proceeding to product preview...");
     push("/product-preview");
   };
 
