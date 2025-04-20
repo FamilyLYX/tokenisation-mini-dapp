@@ -17,7 +17,7 @@ export default function ImportantNotice() {
   const [open, setOpen] = useState(false);
 
   const generateCode = () => {
-    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setCode(newCode);
     localStorage.setItem("product-code", newCode);
     setOpen(true);
