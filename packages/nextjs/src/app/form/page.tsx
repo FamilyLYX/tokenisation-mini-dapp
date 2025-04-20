@@ -7,14 +7,15 @@ import BlackButton from "@/components/black-button";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Product } from "@/types";
 export default function FormPage() {
   const { push } = useRouter();
-  const [formData, setFormData] = useState(() => {
-    const savedData = localStorage.getItem("formData");
+  const [formData, setFormData] = useState<Product | null>(() => {
+    const savedData = localStorage.getItem("product");
     return savedData
       ? JSON.parse(savedData)
       : {
-          productName: "",
+          title: "",
           description: "",
           category: "",
           brand: "",
@@ -27,17 +28,17 @@ export default function FormPage() {
   ) => {
     const { name, value } = e.target;
     const updatedData = { ...formData, [name]: value };
-    setFormData(updatedData);
-    localStorage.setItem("formData", JSON.stringify(updatedData));
+    setFormData(updatedData as Product);
+    localStorage.setItem("product", JSON.stringify(updatedData));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      const updatedData = { ...formData, images: [...formData.images, url] };
-      setFormData(updatedData);
-      localStorage.setItem("formData", JSON.stringify(updatedData));
+      const updatedData = { ...formData, images: [...formData?.images, url] };
+      setFormData(updatedData as Product);
+      localStorage.setItem("product", JSON.stringify(updatedData));
     }
   };
 
@@ -49,10 +50,10 @@ export default function FormPage() {
         <div>
           <Label className="text-sm font-mono">Product Name</Label>
           <Input
-            name="productName"
+            name="title"
             placeholder="Name"
             className="mt-1"
-            value={formData.productName}
+            value={formData?.title}
             onChange={handleInputChange}
           />
         </div>
@@ -64,7 +65,7 @@ export default function FormPage() {
             placeholder="Description"
             className="mt-1"
             rows={3}
-            value={formData.description}
+            value={formData?.description}
             onChange={handleInputChange}
           />
         </div>
@@ -75,7 +76,7 @@ export default function FormPage() {
             name="category"
             placeholder="Fashion/Consumer"
             className="mt-1"
-            value={formData.category}
+            value={formData?.category}
             onChange={handleInputChange}
           />
         </div>
@@ -86,7 +87,7 @@ export default function FormPage() {
             name="brand"
             placeholder="Adidas"
             className="mt-1"
-            value={formData.brand}
+            value={formData?.brand}
             onChange={handleInputChange}
           />
         </div>

@@ -3,26 +3,23 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-
-type Product = {
-  title: string;
-  description: string;
-  images: string[];
-};
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Product } from "@/types";
 
 export default function ProductPreview() {
+  const { push } = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [index, setIndex] = useState(0);
 
-  // Mock API fetch
   useEffect(() => {
-    const mockData: Product = {
-      title: "Awesome Jacket",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      images: ["/mock/jacket1.png", "/mock/jacket2.png", "/mock/jacket3.png"],
-    };
-    setProduct(mockData);
+    const storedProduct = localStorage.getItem("product");
+    if (storedProduct) {
+      setProduct(JSON.parse(storedProduct));
+    } else {
+      toast.error("Please fill the form first, redirecting to form...");
+      push("/form");
+    }
   }, []);
 
   const handleNext = () => {
@@ -45,12 +42,6 @@ export default function ProductPreview() {
 
       {/* Image Carousel */}
       <div className="relative rounded-2xl overflow-hidden">
-        <img
-          src={product.images[index]}
-          alt="Product"
-          className="w-full rounded-xl object-cover"
-        />
-
         <button
           onClick={handlePrev}
           className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 p-1 rounded-full"
@@ -65,7 +56,6 @@ export default function ProductPreview() {
         </button>
       </div>
 
-      {/* Title + Description */}
       <div className="mt-6 text-center">
         <h1 className="text-2xl font-display font-bold">{product.title}</h1>
         <p className="text-sm mt-2 px-2 text-gray-600 font-mono leading-relaxed">

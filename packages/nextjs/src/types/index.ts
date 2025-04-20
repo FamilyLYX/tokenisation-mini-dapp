@@ -3,6 +3,14 @@ import { Abi } from "abitype";
 
 export type InheritedFunctions = { readonly [key: string]: string };
 
+export interface Product {
+  title: string;
+  brand: string;
+  description: string;
+  category: string;
+  images: string[];
+}
+
 export type GenericContract = {
   address: Address;
   abi: Abi;
