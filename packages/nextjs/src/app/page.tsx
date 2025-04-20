@@ -1,7 +1,9 @@
 "use client";
 import BlackButton from "@/components/black-button";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const { push } = useRouter();
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 text-center bg-white">
       <div className="mb-4">
@@ -20,7 +22,7 @@ export default function Home() {
 
       <BlackButton
         onClick={() => {
-          window.open("https://app.familylyx.com", "_blank");
+          push("/individual");
         }}
         className="mt-6 w-60 text-base py-2 rounded-full"
       >

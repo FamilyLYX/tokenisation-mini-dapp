@@ -1,28 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
 
 export default function ImportantNotice() {
-  const router = useRouter();
-
   return (
     <div className="min-h-screen px-6 py-8 flex flex-col justify-between">
-      {/* Header */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => router.back()}
-            className="w-8 h-8 border rounded-full flex items-center justify-center"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-        </div>
-
         <h2 className="text-xl font-[cursive] italic text-center">family</h2>
-
-        <h1 className="text-3xl text-tokenRed text-center font-bold">
+        <h1 className="text-3xl text-[#FF0000] text-center font-bold">
           Important Notice
         </h1>
 
@@ -42,7 +28,6 @@ export default function ImportantNotice() {
         </div>
       </div>
 
-      {/* Generate Button */}
       <div className="mt-8">
         <Button
           variant="outline"

@@ -6,49 +6,94 @@ import { Label } from "@/components/ui/label";
 import BlackButton from "@/components/black-button";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-
+import { useRouter } from "next/navigation";
 export default function FormPage() {
-  const [, setImages] = useState<string[]>(["/img1.jpg", "/img2.jpg"]);
+  const { push } = useRouter();
+  const [formData, setFormData] = useState(() => {
+    const savedData = localStorage.getItem("formData");
+    return savedData
+      ? JSON.parse(savedData)
+      : {
+          productName: "",
+          description: "",
+          category: "",
+          brand: "",
+          images: ["/img1.jpg", "/img2.jpg"],
+        };
+  });
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    const updatedData = { ...formData, [name]: value };
+    setFormData(updatedData);
+    localStorage.setItem("formData", JSON.stringify(updatedData));
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      setImages((prev) => [...prev, url]);
+      const updatedData = { ...formData, images: [...formData.images, url] };
+      setFormData(updatedData);
+      localStorage.setItem("formData", JSON.stringify(updatedData));
     }
   };
 
   return (
     <div className="min-h-screen w-full px-6 py-8 flex flex-col justify-between">
-      {/* Header */}
       <h2 className="text-xl font-[cursive] italic text-center mb-6">family</h2>
 
-      {/* Form */}
       <div className="space-y-4">
         <div>
           <Label className="text-sm font-mono">Product Name</Label>
-          <Input placeholder="Name" className="mt-1" />
+          <Input
+            name="productName"
+            placeholder="Name"
+            className="mt-1"
+            value={formData.productName}
+            onChange={handleInputChange}
+          />
         </div>
 
         <div>
           <Label className="text-sm font-mono">Description</Label>
-          <Textarea placeholder="Description" className="mt-1" rows={3} />
+          <Textarea
+            name="description"
+            placeholder="Description"
+            className="mt-1"
+            rows={3}
+            value={formData.description}
+            onChange={handleInputChange}
+          />
         </div>
 
         <div>
           <Label className="text-sm font-mono">Category</Label>
-          <Input placeholder="Fashion/Consumer" className="mt-1" />
+          <Input
+            name="category"
+            placeholder="Fashion/Consumer"
+            className="mt-1"
+            value={formData.category}
+            onChange={handleInputChange}
+          />
         </div>
 
         <div>
           <Label className="text-sm font-mono">Brand/Manufacturer</Label>
-          <Input placeholder="Adidas" className="mt-1" />
+          <Input
+            name="brand"
+            placeholder="Adidas"
+            className="mt-1"
+            value={formData.brand}
+            onChange={handleInputChange}
+          />
         </div>
 
         <div>
           <Label className="text-sm font-mono mb-2 block">Insert Photos</Label>
           <div className="flex items-center gap-2">
-            {/* Upload Button */}
             <label
               htmlFor="upload"
               className="w-10 h-10 border rounded-full flex items-center justify-center cursor-pointer"
@@ -66,9 +111,14 @@ export default function FormPage() {
         </div>
       </div>
 
-      {/* Button */}
       <div className="mt-8">
-        <BlackButton withArrow className="w-full rounded-full py-2 text-base">
+        <BlackButton
+          withArrow
+          className="w-full rounded-full py-2 text-base"
+          onClick={() => {
+            push("/notice");
+          }}
+        >
           Next
         </BlackButton>
       </div>
