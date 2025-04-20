@@ -2,86 +2,94 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/DPPNFT.sol"; // adjust path as needed
+import "../src/DPPNFT.sol";
 
 contract DPPNFTTest is Test {
-    DPPNFT public dppNFT;
-    address public owner = address(0xABCD);
-    address public recipient = address(0x1234);
-    bytes32 public tokenId = keccak256("token-001");
+    DPPNFT public dpp;
+    address public factory = address(0xFACA);
+    address public user = address(0xBEEF);
+    address public newOwner = address(0xCAFE);
 
-    string public plainUid = "unique-product-id";
-    bytes32 public uidHash = keccak256(abi.encodePacked(plainUid));
-    string public publicMetadata = '{"name":"DPP Watch","type":"physical"}';
-    bytes public encryptedMetadata = abi.encode("encrypted-secret");
+    string public name = "Demo Product Pass";
+    string public symbol = "DPP";
+    string public uid = "UNIQUE-UID-123";
+    string public publicMetadata = '{"name":"Product","description":"Info"}';
+    bytes public encryptedMetadata = abi.encode("secret-metadata");
+
+    bytes32 public tokenId = bytes32(uint256(1));
+    bytes32 public uidHash;
 
     function setUp() public {
-        dppNFT = new DPPNFT("DPP", "DPPNFT", owner);
+        vm.prank(factory);
+        dpp = new DPPNFT(name, symbol, factory);
+        uidHash = keccak256(abi.encodePacked(uid));
     }
 
-    function testMintWithSplitMetadata() public {
-        vm.prank(owner);
-        dppNFT.mintWithSplitMetadata(
-            recipient,
-            tokenId,
-            plainUid,
-            publicMetadata,
-            encryptedMetadata
-        );
+    function testInitialize() public {
+        vm.prank(factory);
+        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
 
-        // Validate UID hash
-        bytes32 storedHash = abi.decode(
-            dppNFT.getDataForTokenId(tokenId, keccak256("DPP_UID_Hash")),
-            (bytes32)
-        );
-        assertEq(storedHash, uidHash);
+        // Verify token owner
+        assertEq(dpp.owner(), user);
 
-        // Validate public metadata
-        bytes memory storedMetadata = dppNFT.getDataForTokenId(
-            tokenId,
-            _LSP4_METADATA_KEY
-        );
-        assertEq(string(storedMetadata), publicMetadata);
+        // Verify UID hash stored
+        assertEq(dpp.getUIDHash(), uidHash);
 
-        // Validate encrypted metadata
-        bytes memory storedEncrypted = dppNFT.getDataForTokenId(
-            tokenId,
-            keccak256("DPP_Encrypted_Metadata")
-        );
-        assertEq(storedEncrypted, encryptedMetadata);
+        // Verify public metadata
+        assertEq(string(dpp.getPublicMetadata()), publicMetadata);
 
-        // Ownership check
-        assertEq(dppNFT.ownerOf(tokenId), recipient);
+        // Fail re-initialization
+        vm.expectRevert("DPPNFT: already initialized");
+        vm.prank(factory);
+        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
     }
 
-    function testTransferWithCorrectUID() public {
-        vm.prank(owner);
-        dppNFT.mintWithSplitMetadata(
-            owner,
-            tokenId,
-            plainUid,
-            publicMetadata,
-            encryptedMetadata
-        );
-
-        vm.prank(owner);
-        dppNFT.transferWithUID(owner, recipient, tokenId, "", plainUid);
-
-        assertEq(dppNFT.ownerOf(tokenId), recipient);
+    function testOnlyFactoryCanInitialize() public {
+        vm.expectRevert("DPPNFT: caller is not the factory");
+        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
     }
 
-    function testTransferWithIncorrectUIDShouldRevert() public {
-        vm.prank(owner);
-        dppNFT.mintWithSplitMetadata(
-            owner,
-            tokenId,
-            plainUid,
-            publicMetadata,
-            encryptedMetadata
-        );
+    function testEncryptedMetadataOnlyOwnerCanRead() public {
+        vm.prank(factory);
+        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
 
-        vm.prank(owner);
-        vm.expectRevert("Invalid UID code");
-        dppNFT.transferWithUID(owner, recipient, tokenId, "", "wrong-code");
+        // Non-owner tries to read encrypted metadata
+        vm.expectRevert("ERC725Y: caller is not the owner");
+        dpp.getEncryptedMetadata();
+
+        // Let user read it
+        vm.prank(user);
+        bytes memory data = dpp.getEncryptedMetadata();
+        assertEq(data, encryptedMetadata);
+    }
+
+    function testTransferOwnershipWithUID() public {
+        vm.prank(factory);
+        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
+
+        // Transfer with correct UID
+        vm.prank(user);
+        dpp.transferOwnershipWithUID(newOwner, uid);
+
+        assertEq(dpp.owner(), newOwner);
+    }
+
+    function testTransferOwnershipWithInvalidUID() public {
+        vm.prank(factory);
+        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
+
+        // Try invalid UID
+        vm.prank(user);
+        vm.expectRevert("DPPNFT: Invalid UID code");
+        dpp.transferOwnershipWithUID(newOwner, "wrong-uid");
+    }
+
+    function testTransfersAreDisabled() public {
+        vm.prank(factory);
+        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
+
+        vm.prank(user);
+        vm.expectRevert("DPPNFT: transfers are disabled");
+        dpp.transfer(user, newOwner, tokenId, true, "");
     }
 }
