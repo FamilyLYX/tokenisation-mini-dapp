@@ -4,42 +4,72 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import BlackButton from "@/components/black-button";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { Plus, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/types";
+
 export default function FormPage() {
   const { push } = useRouter();
-  const [formData, setFormData] = useState<Product | null>(() => {
-    const savedData = localStorage.getItem("product");
-    return savedData
-      ? JSON.parse(savedData)
-      : {
-          title: "",
-          description: "",
-          category: "",
-          brand: "",
-          images: ["/img1.jpg", "/img2.jpg"],
-        };
+
+  const [formData, setFormData] = useState<Product>({
+    title: "",
+    description: "",
+    category: "",
+    brand: "",
+    images: [],
   });
+
+  useEffect(() => {
+    const savedData = localStorage.getItem("product");
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+    }
+  }, []);
+
+  const saveToLocalStorage = (data: Product) => {
+    localStorage.setItem("product", JSON.stringify(data));
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     const updatedData = { ...formData, [name]: value };
-    setFormData(updatedData as Product);
-    localStorage.setItem("product", JSON.stringify(updatedData));
+    setFormData(updatedData);
+    saveToLocalStorage(updatedData);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      const updatedData = { ...formData, images: [...formData?.images, url] };
-      setFormData(updatedData as Product);
-      localStorage.setItem("product", JSON.stringify(updatedData));
+    if (!file) return;
+
+    const formDataFile = new FormData();
+    formDataFile.append("file", file);
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formDataFile,
+    });
+
+    const data = await res.json();
+    if (data.url) {
+      const updatedData = {
+        ...formData,
+        images: [...formData.images, data.url],
+      };
+      setFormData(updatedData);
+      saveToLocalStorage(updatedData);
+    } else {
+      alert("Upload failed.");
     }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newImages = formData.images.filter((_, i) => i !== index);
+    const updatedData = { ...formData, images: newImages };
+    setFormData(updatedData);
+    saveToLocalStorage(updatedData);
   };
 
   return (
@@ -53,7 +83,7 @@ export default function FormPage() {
             name="title"
             placeholder="Name"
             className="mt-1"
-            value={formData?.title}
+            value={formData.title}
             onChange={handleInputChange}
           />
         </div>
@@ -65,7 +95,7 @@ export default function FormPage() {
             placeholder="Description"
             className="mt-1"
             rows={3}
-            value={formData?.description}
+            value={formData.description}
             onChange={handleInputChange}
           />
         </div>
@@ -76,7 +106,7 @@ export default function FormPage() {
             name="category"
             placeholder="Fashion/Consumer"
             className="mt-1"
-            value={formData?.category}
+            value={formData.category}
             onChange={handleInputChange}
           />
         </div>
@@ -87,17 +117,19 @@ export default function FormPage() {
             name="brand"
             placeholder="Adidas"
             className="mt-1"
-            value={formData?.brand}
+            value={formData.brand}
             onChange={handleInputChange}
           />
         </div>
 
         <div>
           <Label className="text-sm font-mono mb-2 block">Insert Photos</Label>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Upload Button */}
             <label
               htmlFor="upload"
-              className="w-10 h-10 border rounded-full flex items-center justify-center cursor-pointer"
+              className="w-12 h-12 border rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-100"
             >
               <Plus className="w-5 h-5" />
               <input
@@ -108,6 +140,24 @@ export default function FormPage() {
                 onChange={handleImageUpload}
               />
             </label>
+
+            {/* Image Thumbnails */}
+            {formData.images.map((imgUrl, index) => (
+              <div key={index} className="relative w-12 h-12">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imgUrl}
+                  alt={`Uploaded ${index}`}
+                  className="w-full h-full object-cover rounded-full border"
+                />
+                <button
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute -top-1 -right-1 bg-black text-white rounded-full p-0.5 hover:bg-red-600"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>

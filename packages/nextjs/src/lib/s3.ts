@@ -1,4 +1,3 @@
-// lib/s3.ts
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import { Buffer } from "buffer";
@@ -23,7 +22,7 @@ export async function uploadImageToS3(
     Key,
     Body: fileBuffer,
     ContentType: mimeType,
-    ACL: "public-read", // Optional: only if you want public access
+    ACL: "public-read",
   });
 
   await s3.send(command);
