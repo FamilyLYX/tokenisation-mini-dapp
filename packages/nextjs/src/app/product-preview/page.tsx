@@ -57,13 +57,20 @@ export default function ProductPreview() {
       </div>
 
       <div className="mt-6 text-center">
-        <h1 className="text-2xl font-display font-bold">{product.title}</h1>
+        <p className="text-sm mt-2 px-2 text-gray-500 font-mono leading-relaxed">
+          {product.category} Product
+        </p>
+        <h1 className="text-3xl font-display font-bold text-gray-800 mb-2">
+          {product.title}
+        </h1>
         <p className="text-sm mt-2 px-2 text-gray-600 font-mono leading-relaxed">
           {product.description}
         </p>
+        <p className="text-sm mt-2 px-2 text-gray-600 font-mono leading-relaxed">
+          <span className="font-semibold">Brand:</span> {product.brand}
+        </p>
       </div>
 
-      {/* Tokenise Button */}
       <div className="mt-8">
         <Button className="w-full rounded-full py-6 font-mono">Tokenise</Button>
       </div>
