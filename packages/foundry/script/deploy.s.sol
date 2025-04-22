@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import {Script, console} from "forge-std/Script.sol";
 import {DPPNFTFactory} from "../src/DPPNFTFactory.sol";
 
-contract DeployDPPNFTFactory is Script {
+contract DeployScript is Script {
     function run() external {
         // Load deployer's private key from environment variable
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
