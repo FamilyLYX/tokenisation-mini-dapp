@@ -4,13 +4,7 @@ import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { NFT_ABI } from "@/constants/dpp";
 import { createPublicClient, http } from "viem";
 import { luksoTestnet } from "viem/chains";
-type Product = {
-  title: string;
-  description: string;
-  category: string;
-  brand: string;
-  images: string[];
-};
+import { Product } from "@/types";
 
 const readClient = createPublicClient({
   chain: luksoTestnet,
