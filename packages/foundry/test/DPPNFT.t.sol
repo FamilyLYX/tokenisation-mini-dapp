@@ -54,7 +54,7 @@ contract DPPNFTTest is Test {
         dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
 
         // Non-owner tries to read encrypted metadata
-        vm.expectRevert("ERC725Y: caller is not the owner");
+        vm.expectRevert("DPPNFT: Not NFT owner");
         dpp.getEncryptedMetadata();
 
         // Let user read it
@@ -89,7 +89,7 @@ contract DPPNFTTest is Test {
         dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
 
         vm.prank(user);
-        vm.expectRevert("DPPNFT: transfers are disabled");
+        vm.expectRevert("DPPNFT: Only internal transfers allowed");
         dpp.transfer(user, newOwner, tokenId, true, "");
     }
 }
