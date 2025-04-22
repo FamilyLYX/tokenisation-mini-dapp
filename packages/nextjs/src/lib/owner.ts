@@ -1,4 +1,4 @@
-import { createWalletClient, http } from "viem";
+import { createWalletClient, http, createPublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { luksoTestnet } from "viem/chains";
@@ -13,6 +13,12 @@ if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
 const account = privateKeyToAccount(
   process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`,
 );
+
+// Create the public client for reading from contracts
+const readClient = createPublicClient({
+  chain: luksoTestnet,
+  transport: http(), // Using the same transport for reading
+});
 
 const walletClient = createWalletClient({
   account,
@@ -47,6 +53,23 @@ export async function testCreateNFT(
     return { hash: tx }; // tx.hash will give the transaction hash
   } catch (error) {
     console.error("Error resolving createNFT:", error);
+    throw error;
+  }
+}
+
+// Function to fetch metadata of all deployed NFTs
+export async function getAllNFTMetadata(): Promise<number> {
+  try {
+    // 1. Fetch deployed NFTs from the factory contract
+    const deployedNFTs = await readClient.readContract({
+      abi: FACTORY_ABI,
+      address: FACTORY_ADDRESS,
+      functionName: "getDeployedNFTs",
+    });
+
+    return deployedNFTs ? deployedNFTs?.length : 0;
+  } catch (error) {
+    console.error("Error fetching NFT metadata:", error);
     throw error;
   }
 }

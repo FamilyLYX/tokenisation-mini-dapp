@@ -12,7 +12,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { testCreateNFT } from "@/lib/owner";
+import { getAllNFTMetadata, testCreateNFT } from "@/lib/owner";
 
 export default function ProductPreview() {
   const { push } = useRouter();
@@ -29,6 +29,18 @@ export default function ProductPreview() {
       toast.error("Please fill the form first, redirecting to form...");
       push("/form");
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchNFTMetadata = async () => {
+      try {
+        const metadata = await getAllNFTMetadata();
+        console.log("NFT Metadata:", metadata);
+      } catch (error) {
+        console.error("Error fetching NFT metadata:", error);
+      }
+    };
+    fetchNFTMetadata();
   }, []);
 
   if (!product) return <div className="text-center p-10">Loading...</div>;
