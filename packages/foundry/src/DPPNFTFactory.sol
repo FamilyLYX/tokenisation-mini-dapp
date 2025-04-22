@@ -6,8 +6,13 @@ import "./DPPNFT.sol";
 contract DPPNFTFactory {
     address public owner;
     mapping(address => bool) public nftContracts;
-
+    address[] public allNFTs;
+    mapping(bytes32 => bool) public usedUIDs;
     event NFTCreated(address indexed nftAddress, address indexed initialOwner);
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
 
     modifier onlyOwner() {
         require(msg.sender == owner, "DPPNFTFactory: caller is not the owner");
@@ -24,6 +29,7 @@ contract DPPNFTFactory {
             "DPPNFTFactory: new owner is the zero address"
         );
         owner = newOwner;
+        emit OwnershipTransferred(owner, newOwner);
     }
 
     function createNFT(
@@ -38,7 +44,7 @@ contract DPPNFTFactory {
             initialOwner != address(0),
             "DPPNFTFactory: initialOwner is the zero address"
         );
-
+        bytes32 uidHash = keccak256(abi.encodePacked(plainUidCode));
         // Deploy new DPPNFT contract
         DPPNFT nft = new DPPNFT(name, symbol, address(this));
 
@@ -52,6 +58,8 @@ contract DPPNFTFactory {
 
         // Register the new NFT contract
         nftContracts[address(nft)] = true;
+        allNFTs.push(address(nft));
+        usedUIDs[uidHash] = true;
 
         emit NFTCreated(address(nft), initialOwner);
 
@@ -60,5 +68,9 @@ contract DPPNFTFactory {
 
     function isRegisteredNFT(address nftAddress) external view returns (bool) {
         return nftContracts[nftAddress];
+    }
+
+    function getDeployedNFTs() external view returns (address[] memory) {
+        return allNFTs;
     }
 }

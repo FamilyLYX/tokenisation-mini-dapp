@@ -58,7 +58,7 @@ contract DPPNFT is LSP8IdentifiableDigitalAsset {
             "DPPNFT: Invalid UID code"
         );
 
-        transfer(msg.sender, to, TOKEN_ID, true, "");
+        _transfer(msg.sender, to, TOKEN_ID, true, "");
     }
 
     // Helper functions
@@ -70,16 +70,11 @@ contract DPPNFT is LSP8IdentifiableDigitalAsset {
         return _getData(_LSP4_METADATA_KEY);
     }
 
-    function getEncryptedMetadata()
-        external
-        view
-        onlyOwner
-        returns (bytes memory)
-    {
+    function getEncryptedMetadata() external view returns (bytes memory) {
+        require(msg.sender == tokenOwnerOf(TOKEN_ID), "DPPNFT: Not NFT owner");
         return _getData(_DPP_ENCRYPTED_METADATA_KEY);
     }
 
-    // Override to restrict transfers to owner only
     function transfer(
         address from,
         address to,
@@ -87,7 +82,11 @@ contract DPPNFT is LSP8IdentifiableDigitalAsset {
         bool force,
         bytes memory data
     ) public override {
-        revert("DPPNFT: transfers are disabled");
+        require(
+            msg.sender == address(this),
+            "DPPNFT: Only internal transfers allowed"
+        );
+        super.transfer(from, to, tokenId, force, data);
     }
 
     // Returns the current owner of the NFT
