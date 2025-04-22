@@ -12,10 +12,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { getAllNFTMetadata, testCreateNFT } from "@/lib/owner";
+// import { testCreateNFT } from "@/lib/owner";
+import { useDPPNFTFactory } from "@/hooks/useDPPFactory";
 
 export default function ProductPreview() {
   const { push } = useRouter();
+  const { createNFT } = useDPPNFTFactory();
   const [product, setProduct] = useState<Product | null>(null);
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
@@ -31,24 +33,23 @@ export default function ProductPreview() {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchNFTMetadata = async () => {
-      try {
-        const metadata = await getAllNFTMetadata();
-        console.log("NFT Metadata:", metadata);
-      } catch (error) {
-        console.error("Error fetching NFT metadata:", error);
-      }
-    };
-    fetchNFTMetadata();
-  }, []);
-
   if (!product) return <div className="text-center p-10">Loading...</div>;
-  const tokeniseTest = async () => {
-    const tx = await testCreateNFT(product, "trial");
+  
+  // const tokeniseTest = async () => {
+  //   const tx = await testCreateNFT(product, "trial");
+  //   console.log("Transaction hash:", tx);
+  //   toast.success("NFT created successfully!");
+  // };
+
+  const actualTokenise = async () => {
+    const tx = await createNFT(product, "trial");
+    if (!tx) {
+      return;
+    }
     console.log("Transaction hash:", tx);
     toast.success("NFT created successfully!");
   };
+
   return (
     <div className="min-h-screen flex flex-col justify-between px-6 py-6">
       <h2 className="text-xl font-[cursive] italic text-center mb-4">family</h2>
@@ -94,7 +95,7 @@ export default function ProductPreview() {
       <div className="mt-8">
         <Button
           className="w-full rounded-full py-6 font-mono"
-          onClick={tokeniseTest}
+          onClick={actualTokenise}
         >
           Tokenise
         </Button>

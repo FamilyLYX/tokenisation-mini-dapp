@@ -17,7 +17,7 @@ export const useDPPNFTFactory = () => {
   const createNFT = async (formData: Product, plainUidCode: string) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
-      return;
+      return null;
     }
 
     try {
@@ -45,6 +45,7 @@ export const useDPPNFTFactory = () => {
     } catch (err) {
       console.error("Error creating NFT:", err);
       toast.error("Failed to create NFT.");
+      return null;
     }
   };
 
