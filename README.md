@@ -78,13 +78,11 @@ This Open Beta focuses on the core mechanics implemented as a mini-dApp interact
 
 A simplified diagram illustrating the interaction between the Frontend Mini-dApp, UP Browser Extension, LUKSO Testnet (The Grid), Family Protocol Smart Contracts (Factory, DPPNFT instance, Vault), and conceptual Off-Chain components can be found in the repository at:
 
-`/diagrams/hackathon_mvp_architecture.png` *(<- Update this path)
-
-*(Ensure you create and add this diagram to your repository)*
+*(Insert Diagram)*
 
 ---
 
-## Key User Flows Demonstrated (MVP)
+## Key User Flows Demonstrated (Open Beta)
 
 The Open Beta mini-dApp allows users to experience the following core flows:
 
@@ -132,9 +130,9 @@ This Open Beta is the first step. Our roadmap includes:
 ## Team
 
 * James Albarracin (Co-founder/CEO)
-* Bhavya [Last Name] (Co-founder/CTO)
+* Bhavya Gor (Co-founder/CTO)
 * Azeez Mumeen (Full Stack Developer)
 
 ---
 
-Thank you for testing the Family Protocol Open Beta! Please provide feedback via [[Link to Feedback Form/GitHub Issues](https://x.com/FamilyLYX)].
+Thank you for testing the Family Protocol Open Beta! Please provide feedback via [[Click Here](https://x.com/FamilyLYX)].
