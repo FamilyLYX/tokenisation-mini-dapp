@@ -84,7 +84,18 @@ export async function getAllNFTMetadata(): Promise<number> {
         address: nftAddress as `0x${string}`,
         functionName: "owner",
       });
-      console.log("👤 Owner:", owner, " of metadata: ", decodedMetadata);
+      const uidHash = await readClient.readContract({
+        abi: NFT_ABI,
+        address: nftAddress as `0x${string}`,
+        functionName: "getUIDHash",
+      });
+      console.log(
+        "👤 Owner:",
+        owner,
+        " of metadata: ",
+        decodedMetadata + " uidHash: ",
+        uidHash,
+      );
     }
     return deployedNFTs.length;
   } catch (error) {
