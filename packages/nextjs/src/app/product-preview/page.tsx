@@ -12,7 +12,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-// import { testCreateNFT } from "@/lib/owner";
 import { useDPPNFTFactory } from "@/hooks/useDPPFactory";
 
 export default function ProductPreview() {
@@ -34,8 +33,9 @@ export default function ProductPreview() {
   }, []);
 
   if (!product) return <div className="text-center p-10">Loading...</div>;
-  
-  // const tokeniseTest = async () => {
+
+  // const actualTokenise = async () => {
+  //   //TODO:REPLACE TRIAL WITH UID CODE
   //   const tx = await testCreateNFT(product, "trial");
   //   console.log("Transaction hash:", tx);
   //   toast.success("NFT created successfully!");
