@@ -13,7 +13,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useDPPNFTFactory } from "@/hooks/useDPPFactory";
-
+import { useMutation } from "@tanstack/react-query";
 export default function ProductPreview() {
   const { push } = useRouter();
   const { createNFT } = useDPPNFTFactory();
@@ -32,29 +32,30 @@ export default function ProductPreview() {
     }
   }, []);
 
+  const { mutate: tokenise, isPending } = useMutation({
+    mutationFn: async () => {
+      const productCode = localStorage.getItem("product-code");
+      if (!productCode) {
+        throw new Error("Product code not found");
+      }
+      if (!product) {
+        throw new Error("Product data missing");
+      }
+      return createNFT(product, productCode);
+    },
+    onSuccess: (tx) => {
+      console.log("Transaction hash:", tx);
+      localStorage.removeItem("product");
+      localStorage.removeItem("product-code");
+      toast.success("NFT created successfully!");
+      push("/");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Error tokenising NFT");
+    },
+  });
+
   if (!product) return <div className="text-center p-10">Loading...</div>;
-
-  // const actualTokenise = async () => {
-  //   //TODO:REPLACE TRIAL WITH UID CODE
-  //   const tx = await testCreateNFT(product, "trial");
-  //   console.log("Transaction hash:", tx);
-  //   toast.success("NFT created successfully!");
-  // };
-
-  const actualTokenise = async () => {
-    const productCode = localStorage.getItem("product-code");
-    if (!productCode) {
-      toast.error("Product code not found");
-      return;
-    }
-    const tx = await createNFT(product, productCode);
-    if (!tx) {
-      return;
-    }
-    console.log("Transaction hash:", tx);
-    toast.success("NFT created successfully!");
-  };
-
   return (
     <div className="min-h-screen flex flex-col justify-between px-6 py-6">
       <h2 className="text-xl font-[cursive] italic text-center mb-4">family</h2>
@@ -100,9 +101,10 @@ export default function ProductPreview() {
       <div className="mt-8">
         <Button
           className="w-full rounded-full py-6 font-mono"
-          onClick={actualTokenise}
+          onClick={() => tokenise()}
+          disabled={isPending}
         >
-          Tokenise
+          {isPending ? "Tokenising..." : "Tokenise"}
         </Button>
       </div>
     </div>

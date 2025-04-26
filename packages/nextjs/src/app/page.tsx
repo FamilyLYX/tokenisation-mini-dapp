@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { push } = useRouter();
-  const { data: countOfContracts } = useQuery({
+  const { data: countOfContracts, isPending } = useQuery({
     queryKey: ["nftMetadata"],
     queryFn: getAllNFTMetadata,
   });
@@ -19,7 +19,11 @@ export default function Home() {
       </div>
 
       <span className="mb-4 inline-block bg-gray-200 text-gray-800 text-xs font-medium px-2 py-1 rounded-full">
-        Tokenised {countOfContracts ?? 0} products and counting
+        {isPending ? (
+          <span className="animate-pulse">Loading...</span>
+        ) : (
+          `Tokenised Products: ${countOfContracts ?? 0}`
+        )}
       </span>
       <div className="mb-4 text-[64px]  leading-tight">
         <h1 className="font-extrabold">
