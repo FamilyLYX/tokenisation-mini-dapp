@@ -42,7 +42,7 @@ export default function ProductPreview() {
   // };
 
   const actualTokenise = async () => {
-    const productCode = localStorage.getItem("productCode");
+    const productCode = localStorage.getItem("product-code");
     if (!productCode) {
       toast.error("Product code not found");
       return;
