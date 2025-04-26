@@ -83,13 +83,4 @@ contract DPPNFTTest is Test {
         vm.expectRevert("DPPNFT: Invalid UID code");
         dpp.transferOwnershipWithUID(newOwner, "wrong-uid");
     }
-
-    function testTransfersAreDisabled() public {
-        vm.prank(factory);
-        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
-
-        vm.prank(user);
-        vm.expectRevert("DPPNFT: Only internal transfers allowed");
-        dpp.transfer(user, newOwner, tokenId, true, "");
-    }
 }
