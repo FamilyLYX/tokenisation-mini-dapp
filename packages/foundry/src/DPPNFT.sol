@@ -82,10 +82,6 @@ contract DPPNFT is LSP8IdentifiableDigitalAsset {
         bool force,
         bytes memory data
     ) public override {
-        require(
-            msg.sender == address(this),
-            "DPPNFT: Only internal transfers allowed"
-        );
         super.transfer(from, to, tokenId, force, data);
     }
 
