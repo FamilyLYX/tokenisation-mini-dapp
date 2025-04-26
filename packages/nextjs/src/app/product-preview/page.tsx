@@ -42,7 +42,12 @@ export default function ProductPreview() {
   // };
 
   const actualTokenise = async () => {
-    const tx = await createNFT(product, "trial");
+    const productCode = localStorage.getItem("productCode");
+    if (!productCode) {
+      toast.error("Product code not found");
+      return;
+    }
+    const tx = await createNFT(product, productCode);
     if (!tx) {
       return;
     }

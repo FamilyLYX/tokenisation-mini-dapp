@@ -32,7 +32,7 @@ export const useDPPNFTFactory = () => {
         chain: client.chain,
         args: [
           formData.title, // name
-          "DPP", // symbol (or dynamic)
+          "DPP_" + plainUidCode, // symbol (or dynamic)
           accounts[0],
           plainUidCode,
           publicJsonMetadata,
