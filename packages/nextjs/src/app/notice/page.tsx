@@ -47,6 +47,7 @@ export default function ImportantNotice() {
               Embed the 6-digit code we will generate for you on the physical
               product. This should be legible and must permanently stay on the
               physical product
+              Please note that the code is case-sensitive and you should be noting it down as it will be required when putting your product up for sale
             </li>
           </ul>
         </div>
