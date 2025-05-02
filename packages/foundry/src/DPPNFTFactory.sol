@@ -2,35 +2,13 @@
 pragma solidity ^0.8.17;
 
 import "./DPPNFT.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract DPPNFTFactory {
-    address public owner;
+contract DPPNFTFactory is Ownable {
     mapping(address => bool) public nftContracts;
     address[] public allNFTs;
     mapping(bytes32 => bool) public usedUIDs;
     event NFTCreated(address indexed nftAddress, address indexed initialOwner);
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "DPPNFTFactory: caller is not the owner");
-        _;
-    }
-
-    constructor() {
-        owner = msg.sender;
-    }
-
-    function transferOwnership(address newOwner) external onlyOwner {
-        require(
-            newOwner != address(0),
-            "DPPNFTFactory: new owner is the zero address"
-        );
-        owner = newOwner;
-        emit OwnershipTransferred(owner, newOwner);
-    }
 
     function createNFT(
         string memory name,
