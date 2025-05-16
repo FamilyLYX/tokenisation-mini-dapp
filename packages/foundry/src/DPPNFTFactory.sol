@@ -1,47 +1,50 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "@openzeppelin/contracts/proxy/Clones.sol";
 import "./DPPNFT.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract DPPNFTFactory is Ownable {
+    using Clones for address;
+
+    address public immutable implementation;
     mapping(address => bool) public nftContracts;
     address[] public allNFTs;
     mapping(bytes32 => bool) public usedUIDs;
+
     event NFTCreated(address indexed nftAddress, address indexed initialOwner);
 
+    constructor(address _implementation) {
+        implementation = _implementation;
+    }
+
     function createNFT(
-        string memory name,
-        string memory symbol,
         address initialOwner,
         string memory plainUidCode,
         string memory publicJsonMetadata,
         bytes memory encryptedPrivateMetadata
     ) external returns (address) {
-        require(
-            initialOwner != address(0),
-            "DPPNFTFactory: initialOwner is the zero address"
-        );
-        bytes32 uidHash = keccak256(abi.encodePacked(plainUidCode));
-        // Deploy new DPPNFT contract
-        DPPNFT nft = new DPPNFT(name, symbol, address(this));
+        require(initialOwner != address(0), "Invalid owner");
 
-        // Initialize the NFT with metadata and mint to the initial owner
-        nft.initialize(
+        bytes32 uidHash = keccak256(abi.encodePacked(plainUidCode));
+        require(!usedUIDs[uidHash], "UID already used");
+
+        address clone = implementation.clone();
+
+        DPPNFT(clone).initialize(
             initialOwner,
             plainUidCode,
             publicJsonMetadata,
             encryptedPrivateMetadata
         );
 
-        // Register the new NFT contract
-        nftContracts[address(nft)] = true;
-        allNFTs.push(address(nft));
+        nftContracts[clone] = true;
+        allNFTs.push(clone);
         usedUIDs[uidHash] = true;
 
-        emit NFTCreated(address(nft), initialOwner);
-
-        return address(nft);
+        emit NFTCreated(clone, initialOwner);
+        return clone;
     }
 
     function isRegisteredNFT(address nftAddress) external view returns (bool) {
