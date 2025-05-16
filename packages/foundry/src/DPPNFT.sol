@@ -102,6 +102,17 @@ contract DPPNFT is LSP8IdentifiableDigitalAssetInitAbstract {
             );
     }
 
+    function getPublicMetadata(
+        bytes32 tokenId
+    ) external view returns (string memory) {
+        return
+            string(
+                _getData(
+                    keccak256(abi.encodePacked(_LSP4_METADATA_KEY, tokenId))
+                )
+            );
+    }
+
     function getEncryptedMetadata(
         bytes32 tokenId
     ) external view returns (bytes memory) {
