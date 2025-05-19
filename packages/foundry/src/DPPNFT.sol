@@ -49,7 +49,7 @@ contract DPPNFT is
         factory = factoryAddress;
     }
 
-    /// @notice Mints a new NFT with associated metadata
+    /// @notice Mints a new DPP with associated metadata
     /// @param to Receiver of the token
     /// @param plainUidCode The plaintext UID code used for transfer verification
     /// @param publicJsonMetadata JSON string containing public metadata

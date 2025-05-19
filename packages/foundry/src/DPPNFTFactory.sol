@@ -10,8 +10,7 @@ contract DPPNFTFactory is Ownable {
 
     address public immutable implementation;
     mapping(address => bool) public nftContracts;
-    address[] public allNFTs;
-    mapping(bytes32 => bool) public usedUIDs;
+    address[] public allDPPs;
 
     event NFTCreated(address indexed nftAddress, address indexed initialOwner);
 
@@ -20,28 +19,18 @@ contract DPPNFTFactory is Ownable {
     }
 
     function createNFT(
-        address initialOwner,
-        string memory plainUidCode,
-        string memory publicJsonMetadata,
-        bytes memory encryptedPrivateMetadata
+        string memory name,
+        string memory symbol,
+        address initialOwner
     ) external returns (address) {
         require(initialOwner != address(0), "Invalid owner");
 
-        bytes32 uidHash = keccak256(abi.encodePacked(plainUidCode));
-        require(!usedUIDs[uidHash], "UID already used");
-
         address clone = implementation.clone();
-
-        DPPNFT(clone).initialize(
-            initialOwner,
-            plainUidCode,
-            publicJsonMetadata,
-            encryptedPrivateMetadata
-        );
+        DPPNFT dpp = DPPNFT(payable(clone));
+        dpp.initialize(name, symbol, initialOwner, address(this));
 
         nftContracts[clone] = true;
-        allNFTs.push(clone);
-        usedUIDs[uidHash] = true;
+        allDPPs.push(clone);
 
         emit NFTCreated(clone, initialOwner);
         return clone;
@@ -51,7 +40,7 @@ contract DPPNFTFactory is Ownable {
         return nftContracts[nftAddress];
     }
 
-    function getDeployedNFTs() external view returns (address[] memory) {
-        return allNFTs;
+    function getDeployedDPPs() external view returns (address[] memory) {
+        return allDPPs;
     }
 }
