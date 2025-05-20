@@ -6,8 +6,13 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {LSP8IdentifiableDigitalAssetInitAbstract} from "@lukso/lsp8-contracts/contracts/LSP8IdentifiableDigitalAssetInitAbstract.sol";
 import {_LSP4_METADATA_KEY} from "@lukso/lsp4-contracts/contracts/LSP4Constants.sol";
 
+error InvalidFactory();
+error Unauthorized();
+error NotTokenOwner();
+error InvalidUID();
+
 /**
- * @title DPPNFT
+ * @title DPPNFT - Digital Product Passport Non-Fungible Token
  * @dev A LUKSO LSP8-compatible NFT that stores both public and encrypted metadata.
  */
 contract DPPNFT is
@@ -23,37 +28,25 @@ contract DPPNFT is
     uint256 public nextTokenIndex;
 
     modifier onlyFactory() {
-        require(msg.sender == factory, "DPPNFT: caller is not the factory");
+        if (msg.sender != factory) revert InvalidFactory();
         _;
     }
 
     /// @notice Initializes the contract (LSP8, Ownable, Factory)
-    /// @param name_ NFT collection name
-    /// @param symbol_ NFT symbol
-    /// @param newOwner_ Owner of the contract
-    /// @param factoryAddress Address of the DPPNFT factory
     function initialize(
         string memory name_,
         string memory symbol_,
         address newOwner_,
         address factoryAddress
     ) external initializer {
-        require(
-            factoryAddress != address(0),
-            "DPPNFT: factory address required"
-        );
+        if (factoryAddress == address(0)) revert InvalidFactory();
 
         __Ownable_init();
         _initialize(name_, symbol_, newOwner_, 0, 0);
-
         factory = factoryAddress;
     }
 
     /// @notice Mints a new DPP with associated metadata
-    /// @param to Receiver of the token
-    /// @param plainUidCode The plaintext UID code used for transfer verification
-    /// @param publicJsonMetadata JSON string containing public metadata
-    /// @param encryptedPrivateMetadata Encrypted metadata (bytes)
     function mintDPP(
         address to,
         string memory plainUidCode,
@@ -87,17 +80,15 @@ contract DPPNFT is
         address to,
         string memory plainUidCode
     ) external {
-        require(msg.sender == tokenOwnerOf(tokenId), "DPPNFT: Not token owner");
+        if (msg.sender != tokenOwnerOf(tokenId)) revert NotTokenOwner();
 
         bytes32 storedHash = abi.decode(
             _getData(keccak256(abi.encodePacked(_DPP_UID_HASH_KEY, tokenId))),
             (bytes32)
         );
 
-        require(
-            keccak256(abi.encodePacked(plainUidCode)) == storedHash,
-            "DPPNFT: Invalid UID code"
-        );
+        if (keccak256(abi.encodePacked(plainUidCode)) != storedHash)
+            revert InvalidUID();
 
         _transfer(msg.sender, to, tokenId, true, "");
     }
@@ -129,16 +120,22 @@ contract DPPNFT is
     function getEncryptedMetadata(
         bytes32 tokenId
     ) external view returns (bytes memory) {
-        require(
-            msg.sender == tokenOwnerOf(tokenId) ||
-                isOperatorFor(msg.sender, tokenId),
-            "DPPNFT: Not authorized"
-        );
+        if (
+            msg.sender != tokenOwnerOf(tokenId) &&
+            !isOperatorFor(msg.sender, tokenId)
+        ) revert Unauthorized();
+
         return
             _getData(
                 keccak256(
                     abi.encodePacked(_DPP_ENCRYPTED_METADATA_KEY, tokenId)
                 )
             );
+    }
+
+    /// @notice Updates the factory address
+    function setFactory(address newFactory) external onlyOwner {
+        if (newFactory == address(0)) revert InvalidFactory();
+        factory = newFactory;
     }
 }

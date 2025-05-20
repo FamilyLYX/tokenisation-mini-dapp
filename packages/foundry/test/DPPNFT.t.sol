@@ -12,75 +12,93 @@ contract DPPNFTTest is Test {
 
     string public name = "Demo Product Pass";
     string public symbol = "DPP";
+
     string public uid = "UNIQUE-UID-123";
     string public publicMetadata = '{"name":"Product","description":"Info"}';
     bytes public encryptedMetadata = abi.encode("secret-metadata");
 
-    bytes32 public tokenId = bytes32(uint256(1));
-    bytes32 public uidHash;
+    bytes32 public tokenId;
 
     function setUp() public {
+        dpp = new DPPNFT();
         vm.prank(factory);
-        dpp = new DPPNFT(name, symbol, factory);
-        uidHash = keccak256(abi.encodePacked(uid));
+        dpp.initialize(name, symbol, factory, factory);
     }
 
-    function testInitialize() public {
+    function testMintDPP() public {
         vm.prank(factory);
-        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, encryptedMetadata);
 
-        // Verify token owner
-        assertEq(dpp.owner(), user);
+        // tokenId is generated inside mintDPP: get last tokenId (nextTokenIndex-1)
+        uint256 lastIndex = dpp.nextTokenIndex() - 1;
+        // Recompute tokenId the same way mintDPP does
+        tokenId = keccak256(abi.encodePacked(lastIndex, block.timestamp, user));
+
+        // Can't directly get tokenId from contract, so we simulate the same logic:
+        // To avoid block.timestamp issues, let's just fetch tokenOwnerOf for all tokens.
+
+        // Instead, check ownership by scanning tokens or use event logs (better).
+        // Here, we just test ownership by reading tokenOwnerOf for computed tokenId:
+        address owner = dpp.tokenOwnerOf(tokenId);
+        assertEq(owner, user);
 
         // Verify UID hash stored
-        assertEq(dpp.getUIDHash(), uidHash);
+        bytes32 expectedUidHash = keccak256(abi.encodePacked(uid));
+        bytes32 storedUidHash = dpp.getUIDHash(tokenId);
+        assertEq(storedUidHash, expectedUidHash);
 
         // Verify public metadata
-        assertEq(string(dpp.getPublicMetadata()), publicMetadata);
-
-        // Fail re-initialization
-        vm.expectRevert("DPPNFT: already initialized");
-        vm.prank(factory);
-        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
+        string memory storedMetadata = dpp.getPublicMetadata(tokenId);
+        assertEq(storedMetadata, publicMetadata);
     }
 
-    function testOnlyFactoryCanInitialize() public {
-        vm.expectRevert("DPPNFT: caller is not the factory");
-        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
+    function testOnlyFactoryCanMint() public {
+        vm.expectRevert(InvalidFactory.selector); 
+        dpp.mintDPP(user, uid, publicMetadata, encryptedMetadata);
     }
 
-    function testEncryptedMetadataOnlyOwnerCanRead() public {
+    function testEncryptedMetadataOnlyOwnerOrOperatorCanRead() public {
         vm.prank(factory);
-        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, encryptedMetadata);
+
+        uint256 lastIndex = dpp.nextTokenIndex() - 1;
+        tokenId = keccak256(abi.encodePacked(lastIndex, block.timestamp, user));
 
         // Non-owner tries to read encrypted metadata
-        vm.expectRevert("DPPNFT: Not NFT owner");
-        dpp.getEncryptedMetadata();
+        vm.expectRevert(Unauthorized.selector);
+        dpp.getEncryptedMetadata(tokenId);
 
-        // Let user read it
+        // Owner reads encrypted metadata
         vm.prank(user);
-        bytes memory data = dpp.getEncryptedMetadata();
+        bytes memory data = dpp.getEncryptedMetadata(tokenId);
         assertEq(data, encryptedMetadata);
     }
 
     function testTransferOwnershipWithUID() public {
         vm.prank(factory);
-        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, encryptedMetadata);
+
+        uint256 lastIndex = dpp.nextTokenIndex() - 1;
+        tokenId = keccak256(abi.encodePacked(lastIndex, block.timestamp, user));
 
         // Transfer with correct UID
         vm.prank(user);
-        dpp.transferOwnershipWithUID(newOwner, uid);
+        dpp.transferOwnershipWithUID(tokenId, newOwner, uid);
 
-        assertEq(dpp.owner(), newOwner);
+        // Check new token owner
+        address owner = dpp.tokenOwnerOf(tokenId);
+        assertEq(owner, newOwner);
     }
 
     function testTransferOwnershipWithInvalidUID() public {
         vm.prank(factory);
-        dpp.initialize(user, uid, publicMetadata, encryptedMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, encryptedMetadata);
 
-        // Try invalid UID
+        uint256 lastIndex = dpp.nextTokenIndex() - 1;
+        tokenId = keccak256(abi.encodePacked(lastIndex, block.timestamp, user));
+
         vm.prank(user);
-        vm.expectRevert("DPPNFT: Invalid UID code");
-        dpp.transferOwnershipWithUID(newOwner, "wrong-uid");
+        vm.expectRevert(InvalidUID.selector);
+        dpp.transferOwnershipWithUID(tokenId, newOwner, "wrong-uid");
     }
 }
