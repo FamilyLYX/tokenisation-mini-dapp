@@ -7,17 +7,23 @@ export default function Individual() {
   const { push } = useRouter();
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-between px-6 py-8 bg-white text-center">
-      <h2 className="text-xl font-[cursive] italic text-black mt-2">family</h2>
-      <div className="border border-gray-200 rounded-xl p-6 w-full max-w-sm text-center shadow-sm">
-        <h1 className="text-3xl font-display font-bold mb-4">Individual</h1>
+      <Image
+        src="/family_logo_white_bg.svg"
+        alt="Family Logo"
+        width={64}
+        height={64}
+        className="mt-2 w-16 h-16"
+      />
+      <div className="border border-gray-200 rounded-xl p-12 w-full max-w-sm text-center shadow-sm gap-6">
+        <h1 className="text-5xl font-display font-bold mb-4">Individual</h1>
 
         <div className="flex justify-center mb-6">
           <Image
             src={tokenise}
             alt="Individual"
-            width={100}
-            height={100}
-            className="w-24 h-24"
+            width={300}
+            height={300}
+            className="w-48 h-48"
           />
         </div>
 

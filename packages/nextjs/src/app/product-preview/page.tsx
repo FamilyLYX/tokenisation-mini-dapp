@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/carousel";
 import { useDPPNFTFactory } from "@/hooks/useDPPFactory";
 import { useMutation } from "@tanstack/react-query";
+import Image from "next/image";
 export default function ProductPreview() {
   const { push } = useRouter();
   const { createNFT } = useDPPNFTFactory();
@@ -57,8 +58,14 @@ export default function ProductPreview() {
 
   if (!product) return <div className="text-center p-10">Loading...</div>;
   return (
-    <div className="min-h-screen flex flex-col justify-between px-6 py-6">
-      <h2 className="text-xl font-[cursive] italic text-center mb-4">family</h2>
+    <div className="min-h-screen flex flex-col justify-between px-6 py-6 items-center">
+      <Image
+        src="/family_logo_white_bg.svg"
+        alt="Family Logo"
+        width={64}
+        height={64}
+        className="mt-2 w-16 h-16"
+      />
 
       <Carousel
         className="mx-auto mb-16 w-4/5"
@@ -98,7 +105,7 @@ export default function ProductPreview() {
         </p>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 w-full">
         <Button
           className="w-full rounded-full py-6 font-mono"
           onClick={() => tokenise()}

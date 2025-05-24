@@ -10,7 +10,7 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
-
+import Image from "next/image";
 export default function ImportantNotice() {
   const { push } = useRouter();
   const [code, setCode] = useState("");
@@ -30,8 +30,14 @@ export default function ImportantNotice() {
 
   return (
     <div className="min-h-screen px-6 py-8 flex flex-col justify-between">
-      <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-[cursive] italic text-center">family</h2>
+      <div className="flex flex-col gap-4 items-center">
+        <Image
+          src="/family_logo_white_bg.svg"
+          alt="Family Logo"
+          width={64}
+          height={64}
+          className="mt-2 w-16 h-16"
+        />
         <h1 className="text-3xl text-[#FF0000] text-center font-bold">
           Important Notice
         </h1>
@@ -43,12 +49,10 @@ export default function ImportantNotice() {
           </p>
           <br />
           <ul className="list-disc pl-4">
-            <li>
-              Embed the 6-digit code we will generate for you on the physical
-              product. This should be legible and must permanently stay on the
-              physical product
-              Please note that the code is case-sensitive and you should be noting it down as it will be required when putting your product up for sale
-            </li>
+            <li>Embed the 6-digit code we generate on your physical product.</li>
+            <li>Ensure the code is legible and permanently affixed to the product.</li>
+            <li><strong>Note it down exactly as shown—it is case-sensitive.</strong></li>
+            <li>You will need this code when listing your product for sale.</li>
           </ul>
         </div>
       </div>

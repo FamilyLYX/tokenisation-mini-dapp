@@ -8,7 +8,7 @@ import { Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/types";
-
+import Image from "next/image";
 export default function FormPage() {
   const { push } = useRouter();
 
@@ -73,10 +73,15 @@ export default function FormPage() {
   };
 
   return (
-    <div className="min-h-screen w-full px-6 py-8 flex flex-col justify-between">
-      <h2 className="text-xl font-[cursive] italic text-center mb-6">family</h2>
-
-      <div className="space-y-4">
+    <div className="min-h-screen w-full px-6 py-8 flex flex-col justify-between items-center">
+      <Image
+        src="/family_logo_white_bg.svg"
+        alt="Family Logo"
+        width={64}
+        height={64}
+        className="mt-2 w-16 h-16"
+      />
+      <div className="space-y-4 w-full">
         <div>
           <Label className="text-sm font-mono">Product Name</Label>
           <Input
@@ -143,12 +148,12 @@ export default function FormPage() {
 
             {/* Image Thumbnails */}
             {formData.images.map((imgUrl, index) => (
-              <div key={index} className="relative w-12 h-12">
+              <div key={index} className="relative w-14 h-14 aspect-square">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imgUrl}
                   alt={`Uploaded ${index}`}
-                  className="w-full h-full object-cover rounded-full border"
+                  className="w-full h-full object-cover rounded-md border" // changed from 'rounded-full'
                 />
                 <button
                   onClick={() => handleRemoveImage(index)}
@@ -162,7 +167,7 @@ export default function FormPage() {
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 w-full">
         <BlackButton
           withArrow
           className="w-full rounded-full py-2 text-base"
