@@ -1,11 +1,12 @@
-import { createWalletClient, http, createPublicClient } from "viem";
+import { createWalletClient, http, createPublicClient, pad } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { luksoTestnet } from "viem/chains";
 import { Product } from "@/types";
+import { NFT_ABI } from "@/constants/dpp";
 
 type createNFTResponse = { hash: string };
-
+const tokenId = pad("0x2", { size: 32 }); // hardcoded tokenId as bytes32
 if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
   throw new Error("PRIVATE_KEY environment variable is not set.");
 }
@@ -66,28 +67,33 @@ export async function getAllNFTMetadata(): Promise<number> {
       address: FACTORY_ADDRESS,
       functionName: "getDeployedDPPs",
     })) as string[];
-    // for (const nftAddress of deployedNFTs) {
-    //   // 2. Fetch metadata for each NFT
-    //   const metadata = await readClient.readContract({
-    //     abi: NFT_ABI,
-    //     address: nftAddress as `0x${string}`,
-    //     functionName: "getPublicMetadata",
-    //   });
-    //   const decodedMetadata = JSON.parse(
-    //     fromHex(metadata as `0x${string}`, "string"),
-    //   );
-    //   const owner = await readClient.readContract({
-    //     abi: NFT_ABI,
-    //     address: nftAddress as `0x${string}`,
-    //     functionName: "owner",
-    //   });
-    //   console.log(
-    //     "👤 Owner:",
-    //     owner,
-    //     " of metadata: ",
-    //     decodedMetadata + " uidHash: ",
-    //   );
-    // }
+    for (const nftAddress of deployedNFTs) {
+      // 2. Fetch metadata for each NFT
+      console.log(tokenId)
+      const metadata = await readClient.readContract({
+        abi: NFT_ABI,
+        address: nftAddress as `0x${string}`,
+        functionName: "getPublicMetadata",
+        args: [tokenId],
+      });
+      if (!metadata) {
+        console.warn(`No metadata found for NFT at address ${nftAddress}`);
+        continue;
+      }
+      console.log("📄 Metadata for NFT at address:", nftAddress, metadata);
+      const decodedMetadata = JSON.parse(metadata as string);
+      const owner = await readClient.readContract({
+        abi: NFT_ABI,
+        address: nftAddress as `0x${string}`,
+        functionName: "owner",
+      });
+      console.log(
+        "👤 Owner:",
+        owner,
+        " of metadata: ",
+        decodedMetadata + " uidHash: ",
+      );
+    }
     return deployedNFTs.length;
   } catch (error) {
     console.error("Error fetching NFT metadata:", error);

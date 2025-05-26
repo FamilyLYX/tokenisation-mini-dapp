@@ -44,11 +44,11 @@ export default function ProductPreview() {
       if (!product) {
         throw new Error("Product data missing");
       }
-      return mintDPP({
-        dppAddress, // Replace with your DPP contract address
+      console.log(product, dppAddress);
+      return await mintDPP({
+        dppAddress,
         plainUidCode: productCode,
         publicJsonMetadata: JSON.stringify(product),
-        encryptedPrivateMetadata: "0x", // Placeholder for encrypted metadata for now
       });
     },
     onSuccess: (data) => {
@@ -77,6 +77,7 @@ export default function ProductPreview() {
     onSuccess: async (data) => {
       console.log("Transaction hash and result", data);
       const dppAddress = data?.dppAddress;
+      console.log("DPP Address:", dppAddress);
       if (!dppAddress) {
         toast.error("No DPP address returned from tokenisation");
         return;

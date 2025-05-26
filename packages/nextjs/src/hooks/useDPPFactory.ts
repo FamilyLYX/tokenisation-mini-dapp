@@ -57,9 +57,13 @@ export const useDPPNFTFactory = () => {
       //     encryptedPrivateMetadata,
       //   ],
       // });
-
+      const resultTx = await readClient.waitForTransactionReceipt({
+        hash: txHash,
+      });
+      console.log("Transaction successful:", resultTx);
       toast.success("NFT creation transaction sent!");
       return {
+        resultTx,
         hash: txHash,
         dppAddress: cloneAddress as `0x${string}`,
       };
