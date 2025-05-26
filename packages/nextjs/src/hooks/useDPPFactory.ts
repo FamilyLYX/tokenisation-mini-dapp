@@ -21,27 +21,48 @@ export const useDPPNFTFactory = () => {
     }
 
     try {
-      const publicJsonMetadata = JSON.stringify(formData);
-      const encryptedPrivateMetadata = "0x"; // no encrypted data for now
+      const { request, result: cloneAddress } =
+        await readClient.simulateContract({
+          abi: FACTORY_ABI,
+          address: FACTORY_ADDRESS,
+          functionName: "createNFT",
+          account: accounts[0] as `0x${string}`,
+          chain: client.chain,
+          args: [
+            formData.title,
+            formData.title + "_" + plainUidCode,
+            accounts[0],
+          ],
+        });
+      if (!cloneAddress) {
+        toast.error("Failed to simulate NFT creation.");
+        return null;
+      }
+      const txHash = await client.writeContract(request);
 
-      const tx = await client.writeContract({
-        abi: FACTORY_ABI,
-        address: FACTORY_ADDRESS,
-        functionName: "createNFT",
-        account: accounts[0] as `0x${string}`,
-        chain: client.chain,
-        args: [
-          formData.title, // name
-          "DPP_" + plainUidCode, // symbol (or dynamic)
-          accounts[0],
-          plainUidCode,
-          publicJsonMetadata,
-          encryptedPrivateMetadata,
-        ],
-      });
+      console.log("Expected NFT contract address:", cloneAddress);
+
+      // const tx = await client.writeContract({
+      //   abi: FACTORY_ABI,
+      //   address: FACTORY_ADDRESS,
+      //   functionName: "createNFT",
+      //   account: accounts[0] as `0x${string}`,
+      //   chain: client.chain,
+      //   args: [
+      //     formData.title, // name
+      //     "DPP_" + plainUidCode, // symbol (or dynamic)
+      //     accounts[0],
+      //     plainUidCode,
+      //     publicJsonMetadata,
+      //     encryptedPrivateMetadata,
+      //   ],
+      // });
 
       toast.success("NFT creation transaction sent!");
-      return tx;
+      return {
+        hash: txHash,
+        dppAddress: cloneAddress as `0x${string}`,
+      };
     } catch (err) {
       console.error("Error creating NFT:", err);
       toast.error("Failed to create NFT.");
