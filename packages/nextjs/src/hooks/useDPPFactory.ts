@@ -70,13 +70,13 @@ export const useDPPNFTFactory = () => {
     }
   };
 
-  const getDeployedNFTs = async (): Promise<string[]> => {
+  const getDeployedDPPs = async (): Promise<string[]> => {
     if (!client) return [];
     try {
       const nfts = await readClient.readContract({
         abi: FACTORY_ABI,
         address: FACTORY_ADDRESS,
-        functionName: "getDeployedNFTs",
+        functionName: "getDeployedDPPs",
       });
       return nfts as string[];
     } catch (err) {
@@ -123,7 +123,7 @@ export const useDPPNFTFactory = () => {
 
   return {
     createNFT,
-    getDeployedNFTs,
+    getDeployedDPPs,
     getNFTMetadata,
     isRegisteredNFT,
     connectedWallet: accounts?.[0],

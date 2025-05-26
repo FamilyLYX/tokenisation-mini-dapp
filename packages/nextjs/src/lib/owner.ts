@@ -64,7 +64,7 @@ export async function getAllNFTMetadata(): Promise<number> {
     const deployedNFTs = (await readClient.readContract({
       abi: FACTORY_ABI,
       address: FACTORY_ADDRESS,
-      functionName: "getDeployedNFTs",
+      functionName: "getDeployedDPPs",
     })) as string[];
     // for (const nftAddress of deployedNFTs) {
     //   // 2. Fetch metadata for each NFT
