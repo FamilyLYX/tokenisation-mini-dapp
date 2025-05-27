@@ -16,6 +16,7 @@ contract DPPNFTTest is Test {
     string public symbol = "DPP";
 
     string public uid = "UNIQUE-UID-123";
+    string public salt = "RANDOM-SALT";
     string public publicMetadata = '{"name":"Product","description":"Info"}';
 
     bytes32 public tokenId;
@@ -30,7 +31,7 @@ contract DPPNFTTest is Test {
 
     function testOwnerCanMintDPP() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, salt);
 
         tokenId = bytes32(0);
 
@@ -38,17 +39,17 @@ contract DPPNFTTest is Test {
         assertEq(owner, user);
 
         string memory rawMetadata = dpp.getPublicMetadata(tokenId);
-        assertEq(string(rawMetadata), publicMetadata);
+        assertEq(rawMetadata, publicMetadata);
     }
 
     function testOnlyOwnerCanMint() public {
         vm.expectRevert("Ownable: caller is not the owner");
-        dpp.mintDPP(user, uid, publicMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, salt);
     }
 
     function testTransferBlockedForNonAdmin() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, salt);
 
         tokenId = bytes32(0);
 
@@ -59,7 +60,7 @@ contract DPPNFTTest is Test {
 
     function testAdminCanTransfer() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, salt);
 
         tokenId = bytes32(0);
 
@@ -70,14 +71,14 @@ contract DPPNFTTest is Test {
         assertEq(owner, newOwner);
     }
 
-    function testTransferWithCorrectUID() public {
+    function testTransferWithCorrectUIDAndSalt() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, salt);
 
         tokenId = bytes32(0);
 
         vm.prank(user);
-        dpp.transferOwnershipWithUID(tokenId, newOwner, uid);
+        dpp.transferOwnershipWithUID(tokenId, newOwner, uid, salt);
 
         address owner = dpp.tokenOwnerOf(tokenId);
         assertEq(owner, newOwner);
@@ -85,23 +86,34 @@ contract DPPNFTTest is Test {
 
     function testTransferWithInvalidUIDFails() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, salt);
 
         tokenId = bytes32(0);
 
         vm.prank(user);
         vm.expectRevert(InvalidUID.selector);
-        dpp.transferOwnershipWithUID(tokenId, newOwner, "wrong-uid");
+        dpp.transferOwnershipWithUID(tokenId, newOwner, "wrong-uid", salt);
+    }
+
+    function testTransferWithInvalidSaltFails() public {
+        vm.prank(deployer);
+        dpp.mintDPP(user, uid, publicMetadata, salt);
+
+        tokenId = bytes32(0);
+
+        vm.prank(user);
+        vm.expectRevert(InvalidUID.selector);
+        dpp.transferOwnershipWithUID(tokenId, newOwner, uid, "wrong-salt");
     }
 
     function testOnlyTokenOwnerCanCallTransferWithUID() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata);
+        dpp.mintDPP(user, uid, publicMetadata, salt);
 
         tokenId = bytes32(0);
 
-        vm.prank(admin); // Not owner
+        vm.prank(admin); // Not the owner
         vm.expectRevert(NotTokenOwner.selector);
-        dpp.transferOwnershipWithUID(tokenId, newOwner, uid);
+        dpp.transferOwnershipWithUID(tokenId, newOwner, uid, salt);
     }
 }

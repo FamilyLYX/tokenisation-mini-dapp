@@ -16,6 +16,8 @@ import { useDPPNFTFactory } from "@/hooks/useDPPFactory";
 import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
 import { useDPP } from "@/hooks/useDPP";
+import { v4 as uuidv4 } from "uuid";
+import { pad } from "viem";
 export default function ProductPreview() {
   const { push } = useRouter();
   const { createNFT } = useDPPNFTFactory();
@@ -44,14 +46,25 @@ export default function ProductPreview() {
       if (!product) {
         throw new Error("Product data missing");
       }
-      console.log(product, dppAddress);
-      return await mintDPP({
+      const salt = uuidv4();
+      await mintDPP({
         dppAddress,
         plainUidCode: productCode,
         publicJsonMetadata: JSON.stringify(product),
+        salt,
       });
+      await fetch("/api/save-salt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tokenId: pad("0x0", { size: 32 }),
+          contractAddress: dppAddress,
+          salt,
+        }),
+      });
+      return { dppAddress };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Minting successful:", data);
       localStorage.removeItem("product");
       localStorage.removeItem("product-code");

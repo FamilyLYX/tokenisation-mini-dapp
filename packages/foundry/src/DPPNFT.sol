@@ -22,7 +22,6 @@ contract DPPNFT is
     LSP8IdentifiableDigitalAssetInitAbstract
 {
     bytes32 private constant _DPP_UID_HASH_KEY = keccak256("DPP_UID_Hash");
-    bytes32 private constant _DPP_UID_SALT_KEY = keccak256("DPP_UID_Salt");
 
     address public admin;
     uint256 public nextTokenIndex;
@@ -49,18 +48,10 @@ contract DPPNFT is
     function mintDPP(
         address to,
         string memory plainUidCode,
-        string memory publicJsonMetadata
+        string memory publicJsonMetadata,
+        string memory salt
     ) external onlyOwner {
         bytes32 tokenId = bytes32(nextTokenIndex++);
-
-        bytes32 salt = keccak256(
-            abi.encodePacked(
-                msg.sender,
-                tokenId,
-                block.timestamp,
-                blockhash(block.number - 1)
-            )
-        );
 
         bytes32 uidHash = keccak256(abi.encodePacked(salt, plainUidCode));
 
@@ -73,10 +64,6 @@ contract DPPNFT is
         _setData(
             keccak256(abi.encodePacked(_DPP_UID_HASH_KEY, tokenId)),
             abi.encode(uidHash)
-        );
-        _setData(
-            keccak256(abi.encodePacked(_DPP_UID_SALT_KEY, tokenId)),
-            abi.encode(salt)
         );
     }
 
@@ -96,17 +83,13 @@ contract DPPNFT is
     function transferOwnershipWithUID(
         bytes32 tokenId,
         address to,
-        string memory plainUidCode
+        string memory plainUidCode,
+        string memory salt
     ) external {
         if (msg.sender != tokenOwnerOf(tokenId)) revert NotTokenOwner();
 
         bytes32 storedHash = abi.decode(
             _getData(keccak256(abi.encodePacked(_DPP_UID_HASH_KEY, tokenId))),
-            (bytes32)
-        );
-
-        bytes32 salt = abi.decode(
-            _getData(keccak256(abi.encodePacked(_DPP_UID_SALT_KEY, tokenId))),
             (bytes32)
         );
 
@@ -116,6 +99,7 @@ contract DPPNFT is
         _transfer(msg.sender, to, tokenId, true, "");
     }
 
+    /// @notice Returns public JSON metadata
     function getPublicMetadata(
         bytes32 tokenId
     ) external view returns (string memory) {
@@ -124,6 +108,17 @@ contract DPPNFT is
                 _getData(
                     keccak256(abi.encodePacked(_LSP4_METADATA_KEY, tokenId))
                 )
+            );
+    }
+
+    /// @notice Expose stored UID hash for a given tokenId
+    function getUIDHash(bytes32 tokenId) external view returns (bytes32) {
+        return
+            abi.decode(
+                _getData(
+                    keccak256(abi.encodePacked(_DPP_UID_HASH_KEY, tokenId))
+                ),
+                (bytes32)
             );
     }
 }

@@ -13,10 +13,12 @@ export const useDPP = () => {
     dppAddress,
     plainUidCode,
     publicJsonMetadata,
+    salt,
   }: {
     dppAddress: `0x${string}`;
     plainUidCode: string;
     publicJsonMetadata: string;
+    salt: string;
   }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       console.error("Wallet not connected or account not available.");
@@ -29,7 +31,7 @@ export const useDPP = () => {
         address: dppAddress,
         functionName: "mintDPP",
         account: accounts[0],
-        args: [accounts[0], plainUidCode, publicJsonMetadata],
+        args: [accounts[0], plainUidCode, publicJsonMetadata, salt],
         chain: client.chain,
       });
       console.log("Simulation result:", result);
@@ -44,7 +46,7 @@ export const useDPP = () => {
         address: dppAddress,
         functionName: "mintDPP",
         account: accounts[0],
-        args: [accounts[0], plainUidCode, publicJsonMetadata],
+        args: [accounts[0], plainUidCode, publicJsonMetadata,salt],
         chain: client.chain,
       });
 

@@ -209,6 +209,25 @@ export const NFT_ABI = [
   },
   {
     type: "function",
+    name: "getUIDHash",
+    inputs: [
+      {
+        name: "tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "initialize",
     inputs: [
       {
@@ -275,6 +294,11 @@ export const NFT_ABI = [
       },
       {
         name: "publicJsonMetadata",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "salt",
         type: "string",
         internalType: "string",
       },
@@ -590,6 +614,11 @@ export const NFT_ABI = [
       },
       {
         name: "plainUidCode",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "salt",
         type: "string",
         internalType: "string",
       },

@@ -15,7 +15,7 @@ contract DPPNFTFactory is Ownable {
     using Clones for address;
 
     address public immutable implementation;
-    address public immutable admin; // ✅ Admin is set once at deployment
+    address public immutable admin;
 
     mapping(address => bool) public nftContracts;
     address[] public allDPPs;
@@ -52,7 +52,6 @@ contract DPPNFTFactory is Ownable {
         address clone = implementation.clone();
         DPPNFT dpp = DPPNFT(payable(clone));
 
-        // ✅ Pass factory address AND stored admin from constructor
         dpp.initialize(name, symbol, initialOwner, admin);
 
         nftContracts[clone] = true;
@@ -60,10 +59,6 @@ contract DPPNFTFactory is Ownable {
 
         emit NFTCreated(clone, initialOwner);
         return clone;
-    }
-
-    function isRegisteredNFT(address nftAddress) external view returns (bool) {
-        return nftContracts[nftAddress];
     }
 
     function getDeployedDPPs() external view returns (address[] memory) {
