@@ -20,7 +20,7 @@ contract DPPNFTFactoryTest is Test {
         implementation = new DPPNFT();
 
         // ✅ Deploy the factory with implementation AND admin address
-        factory = new DPPNFTFactory(address(implementation), deployer);
+        factory = new DPPNFTFactory(address(implementation));
 
         vm.stopPrank();
     }

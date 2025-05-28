@@ -8,7 +8,6 @@ contract DPPNFTTest is Test {
     DPPNFT public dpp;
 
     address public deployer = address(0xDEADBEEF);
-    address public admin = address(0xA11CE);
     address public user = address(0xBEEF);
     address public newOwner = address(0xCAFE);
 
@@ -19,37 +18,39 @@ contract DPPNFTTest is Test {
     string public salt = "RANDOM-SALT";
     string public publicMetadata = '{"name":"Product","description":"Info"}';
 
+    bytes32 public uidHash;
+    bytes32 public newUidHash;
     bytes32 public tokenId;
 
     function setUp() public {
         dpp = new DPPNFT();
 
+        uidHash = keccak256(abi.encodePacked(salt, uid));
+        newUidHash = keccak256(abi.encodePacked("newsalt", "new-uid"));
+
         // Simulate the deployer calling initialize to become owner
         vm.prank(deployer);
-        dpp.initialize(name, symbol, deployer, admin);
+        dpp.initialize(name, symbol, deployer);
     }
 
     function testOwnerCanMintDPP() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata, salt);
+        dpp.mintDPP(user, publicMetadata, uidHash);
 
         tokenId = bytes32(0);
 
         address owner = dpp.tokenOwnerOf(tokenId);
         assertEq(owner, user);
-
-        string memory rawMetadata = dpp.getPublicMetadata(tokenId);
-        assertEq(rawMetadata, publicMetadata);
     }
 
     function testOnlyOwnerCanMint() public {
         vm.expectRevert("Ownable: caller is not the owner");
-        dpp.mintDPP(user, uid, publicMetadata, salt);
+        dpp.mintDPP(user, publicMetadata, uidHash);
     }
 
-    function testTransferBlockedForNonAdmin() public {
+    function testTransferFunctionIsDisabled() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata, salt);
+        dpp.mintDPP(user, publicMetadata, uidHash);
 
         tokenId = bytes32(0);
 
@@ -58,62 +59,83 @@ contract DPPNFTTest is Test {
         dpp.transfer(user, newOwner, tokenId, true, "");
     }
 
-    function testAdminCanTransfer() public {
+    function testTransferWithUIDRotation_Success() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata, salt);
+        dpp.mintDPP(user, publicMetadata, uidHash);
 
         tokenId = bytes32(0);
 
-        vm.prank(admin);
-        dpp.transfer(user, newOwner, tokenId, true, "");
+        vm.prank(user);
+        dpp.transferWithUIDRotation(
+            tokenId,
+            newOwner,
+            "",
+            salt,
+            uid,
+            newUidHash
+        );
 
         address owner = dpp.tokenOwnerOf(tokenId);
         assertEq(owner, newOwner);
     }
 
-    function testTransferWithCorrectUIDAndSalt() public {
+    function testTransferWithUIDRotation_InvalidUID() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata, salt);
-
-        tokenId = bytes32(0);
-
-        vm.prank(user);
-        dpp.transferOwnershipWithUID(tokenId, newOwner, uid, salt);
-
-        address owner = dpp.tokenOwnerOf(tokenId);
-        assertEq(owner, newOwner);
-    }
-
-    function testTransferWithInvalidUIDFails() public {
-        vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata, salt);
+        dpp.mintDPP(user, publicMetadata, uidHash);
 
         tokenId = bytes32(0);
 
         vm.prank(user);
         vm.expectRevert(InvalidUID.selector);
-        dpp.transferOwnershipWithUID(tokenId, newOwner, "wrong-uid", salt);
+        dpp.transferWithUIDRotation(
+            tokenId,
+            newOwner,
+            "",
+            "wrong-salt",
+            "wrong-uid",
+            newUidHash
+        );
     }
 
-    function testTransferWithInvalidSaltFails() public {
+    function testTransferWithUIDRotation_NotTokenOwner() public {
         vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata, salt);
+        dpp.mintDPP(user, publicMetadata, uidHash);
 
         tokenId = bytes32(0);
 
-        vm.prank(user);
-        vm.expectRevert(InvalidUID.selector);
-        dpp.transferOwnershipWithUID(tokenId, newOwner, uid, "wrong-salt");
-    }
-
-    function testOnlyTokenOwnerCanCallTransferWithUID() public {
-        vm.prank(deployer);
-        dpp.mintDPP(user, uid, publicMetadata, salt);
-
-        tokenId = bytes32(0);
-
-        vm.prank(admin); // Not the owner
+        vm.prank(deployer); // not the token owner
         vm.expectRevert(NotTokenOwner.selector);
-        dpp.transferOwnershipWithUID(tokenId, newOwner, uid, salt);
+        dpp.transferWithUIDRotation(
+            tokenId,
+            newOwner,
+            "",
+            salt,
+            uid,
+            newUidHash
+        );
+    }
+
+    function testFetchStoredMetadataAndUIDHash() public {
+        vm.prank(deployer);
+        bytes32 uidHash = keccak256(abi.encodePacked(salt, uid));
+        dpp.mintDPP(user, publicMetadata, uidHash);
+
+        tokenId = bytes32(0);
+
+        // Fetch public JSON metadata
+        bytes memory metadataBytes = dpp.getDataForTokenId(
+            tokenId,
+            _LSP4_METADATA_KEY
+        );
+        string memory fetchedMetadata = string(metadataBytes);
+        assertEq(fetchedMetadata, publicMetadata);
+
+        // Fetch and verify UID hash
+        bytes memory storedUIDBytes = dpp.getDataForTokenId(
+            tokenId,
+            keccak256("DPP_UID_Hash")
+        );
+        bytes32 storedUIDHash = abi.decode(storedUIDBytes, (bytes32));
+        assertEq(storedUIDHash, uidHash);
     }
 }
