@@ -15,9 +15,13 @@ import {
 import { useDPPNFTFactory } from "@/hooks/useDPPFactory";
 import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
+import { useDPP } from "@/hooks/useDPP";
+import { v4 as uuidv4 } from "uuid";
+import { pad } from "viem";
 export default function ProductPreview() {
   const { push } = useRouter();
   const { createNFT } = useDPPNFTFactory();
+  const { mintDPP } = useDPP();
   const [product, setProduct] = useState<Product | null>(null);
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
@@ -25,13 +29,51 @@ export default function ProductPreview() {
   useEffect(() => {
     const storedProduct = localStorage.getItem("product");
     if (storedProduct) {
-      console.log("Stored product:", JSON.parse(storedProduct));
       setProduct(JSON.parse(storedProduct));
     } else {
       toast.error("Please fill the form first, redirecting to form...");
       push("/form");
     }
   }, []);
+
+  const { mutateAsync: mintDPPToken, isPending: isMinting } = useMutation({
+    mutationFn: async ({ dppAddress }: { dppAddress: `0x${string}` }) => {
+      const productCode = localStorage.getItem("product-code");
+      if (!productCode) {
+        throw new Error("Product code not found");
+      }
+      if (!product) {
+        throw new Error("Product data missing");
+      }
+      const salt = uuidv4();
+      await mintDPP({
+        dppAddress,
+        plainUidCode: productCode,
+        publicJsonMetadata: JSON.stringify(product),
+        salt,
+      });
+      await fetch("/api/save-salt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tokenId: pad("0x0", { size: 32 }),
+          contractAddress: dppAddress,
+          salt,
+        }),
+      });
+      return { dppAddress };
+    },
+    onSuccess: async (data) => {
+      console.log("Minting successful:", data);
+      localStorage.removeItem("product");
+      localStorage.removeItem("product-code");
+      toast.success("DPP token minted successfully!");
+      push("/");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Error minting DPP token");
+    },
+  });
 
   const { mutate: tokenise, isPending } = useMutation({
     mutationFn: async () => {
@@ -44,12 +86,14 @@ export default function ProductPreview() {
       }
       return createNFT(product, productCode);
     },
-    onSuccess: (tx) => {
-      console.log("Transaction hash:", tx);
-      localStorage.removeItem("product");
-      localStorage.removeItem("product-code");
-      toast.success("NFT created successfully!");
-      push("/");
+    onSuccess: async (data) => {
+      const dppAddress = data?.dppAddress;
+      console.log("DPP Address:", dppAddress);
+      if (!dppAddress) {
+        toast.error("No DPP address returned from tokenisation");
+        return;
+      }
+      await mintDPPToken({ dppAddress });
     },
     onError: (error) => {
       toast.error(error.message ?? "Error tokenising NFT");
@@ -109,7 +153,7 @@ export default function ProductPreview() {
         <Button
           className="w-full rounded-full py-6 font-mono"
           onClick={() => tokenise()}
-          disabled={isPending}
+          disabled={isPending || isMinting}
         >
           {isPending ? "Tokenising..." : "Tokenise"}
         </Button>

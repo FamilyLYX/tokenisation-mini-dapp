@@ -6,10 +6,11 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {LSP8IdentifiableDigitalAssetInitAbstract} from "@lukso/lsp8-contracts/contracts/LSP8IdentifiableDigitalAssetInitAbstract.sol";
 import {_LSP4_METADATA_KEY} from "@lukso/lsp4-contracts/contracts/LSP4Constants.sol";
 
-error InvalidFactory();
 error Unauthorized();
 error NotTokenOwner();
 error InvalidUID();
+error TransferNotAllowed();
+error AddressZeroNotAllowed();
 
 /**
  * @title DPPNFT - Digital Product Passport Non-Fungible Token
@@ -21,42 +22,38 @@ contract DPPNFT is
     LSP8IdentifiableDigitalAssetInitAbstract
 {
     bytes32 private constant _DPP_UID_HASH_KEY = keccak256("DPP_UID_Hash");
-    bytes32 private constant _DPP_ENCRYPTED_METADATA_KEY =
-        keccak256("DPP_Encrypted_Metadata");
 
-    address public factory;
+    address public admin;
     uint256 public nextTokenIndex;
 
-    modifier onlyFactory() {
-        if (msg.sender != factory) revert InvalidFactory();
+    modifier onlyAdmin() {
+        if (msg.sender != admin) revert Unauthorized();
         _;
     }
 
-    /// @notice Initializes the contract (LSP8, Ownable, Factory)
     function initialize(
         string memory name_,
         string memory symbol_,
         address newOwner_,
-        address factoryAddress
+        address adminAddress
     ) external initializer {
-        if (factoryAddress == address(0)) revert InvalidFactory();
+        if (adminAddress == address(0)) revert AddressZeroNotAllowed();
 
         __Ownable_init();
         _initialize(name_, symbol_, newOwner_, 0, 0);
-        factory = factoryAddress;
+
+        admin = adminAddress;
     }
 
-    /// @notice Mints a new DPP with associated metadata
     function mintDPP(
         address to,
         string memory plainUidCode,
         string memory publicJsonMetadata,
-        bytes memory encryptedPrivateMetadata
-    ) external onlyFactory {
-        bytes32 tokenId = keccak256(
-            abi.encodePacked(nextTokenIndex++, block.timestamp, to)
-        );
-        bytes32 uidHash = keccak256(abi.encodePacked(plainUidCode));
+        string memory salt
+    ) external onlyOwner {
+        bytes32 tokenId = bytes32(nextTokenIndex++);
+
+        bytes32 uidHash = keccak256(abi.encodePacked(salt, plainUidCode));
 
         _mint(to, tokenId, true, "");
 
@@ -68,17 +65,26 @@ contract DPPNFT is
             keccak256(abi.encodePacked(_DPP_UID_HASH_KEY, tokenId)),
             abi.encode(uidHash)
         );
-        _setData(
-            keccak256(abi.encodePacked(_DPP_ENCRYPTED_METADATA_KEY, tokenId)),
-            encryptedPrivateMetadata
-        );
     }
 
-    /// @notice Transfers token to a new owner using a verified UID
+    /// @dev Block public transfer unless called by admin
+    function transfer(
+        address from,
+        address to,
+        bytes32 tokenId,
+        bool allowNonTokenOwner,
+        bytes memory data
+    ) public virtual override {
+        if (msg.sender != admin) revert TransferNotAllowed();
+        _transfer(from, to, tokenId, allowNonTokenOwner, data);
+    }
+
+    /// @dev Token owner can transfer using UID
     function transferOwnershipWithUID(
         bytes32 tokenId,
         address to,
-        string memory plainUidCode
+        string memory plainUidCode,
+        string memory salt
     ) external {
         if (msg.sender != tokenOwnerOf(tokenId)) revert NotTokenOwner();
 
@@ -87,24 +93,13 @@ contract DPPNFT is
             (bytes32)
         );
 
-        if (keccak256(abi.encodePacked(plainUidCode)) != storedHash)
+        if (keccak256(abi.encodePacked(salt, plainUidCode)) != storedHash)
             revert InvalidUID();
 
         _transfer(msg.sender, to, tokenId, true, "");
     }
 
-    /// @notice Returns the UID hash associated with a token
-    function getUIDHash(bytes32 tokenId) external view returns (bytes32) {
-        return
-            abi.decode(
-                _getData(
-                    keccak256(abi.encodePacked(_DPP_UID_HASH_KEY, tokenId))
-                ),
-                (bytes32)
-            );
-    }
-
-    /// @notice Returns public metadata as JSON string
+    /// @notice Returns public JSON metadata
     function getPublicMetadata(
         bytes32 tokenId
     ) external view returns (string memory) {
@@ -116,26 +111,14 @@ contract DPPNFT is
             );
     }
 
-    /// @notice Returns encrypted metadata (only for owner or operator)
-    function getEncryptedMetadata(
-        bytes32 tokenId
-    ) external view returns (bytes memory) {
-        if (
-            msg.sender != tokenOwnerOf(tokenId) &&
-            !isOperatorFor(msg.sender, tokenId)
-        ) revert Unauthorized();
-
+    /// @notice Expose stored UID hash for a given tokenId
+    function getUIDHash(bytes32 tokenId) external view returns (bytes32) {
         return
-            _getData(
-                keccak256(
-                    abi.encodePacked(_DPP_ENCRYPTED_METADATA_KEY, tokenId)
-                )
+            abi.decode(
+                _getData(
+                    keccak256(abi.encodePacked(_DPP_UID_HASH_KEY, tokenId))
+                ),
+                (bytes32)
             );
-    }
-
-    /// @notice Updates the factory address
-    function setFactory(address newFactory) external onlyOwner {
-        if (newFactory == address(0)) revert InvalidFactory();
-        factory = newFactory;
     }
 }

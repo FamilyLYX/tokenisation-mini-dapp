@@ -6,35 +6,36 @@ import "./DPPNFT.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 error InvalidInitialOwner();
+error InvalidImplementationIsZero();
+error InvalidAdminIsZero();
 
 /// @title DPPNFTFactory
 /// @notice Deploys minimal proxy clones of the DPPNFT contract using EIP-1167
 contract DPPNFTFactory is Ownable {
     using Clones for address;
 
-    // ------------------------------------------------------------------------
-    // State Variables
-    // ------------------------------------------------------------------------
     address public immutable implementation;
+    address public immutable admin;
+
     mapping(address => bool) public nftContracts;
     address[] public allDPPs;
 
-    // ------------------------------------------------------------------------
-    // Events
-    // ------------------------------------------------------------------------
     event NFTCreated(address indexed nftAddress, address indexed initialOwner);
 
-    // ------------------------------------------------------------------------
-    // Constructor
-    // ------------------------------------------------------------------------
     /// @param _implementation The address of the DPPNFT implementation contract
-    constructor(address _implementation) {
+    /// @param _admin The address of the admin (typically the deployer or a trusted system account)
+    constructor(address _implementation, address _admin) {
+        if (_implementation == address(0)) {
+            revert InvalidImplementationIsZero();
+        }
+        if (_admin == address(0)) {
+            revert InvalidAdminIsZero();
+        }
+
         implementation = _implementation;
+        admin = _admin;
     }
 
-    // ------------------------------------------------------------------------
-    // NFT Deployment
-    // ------------------------------------------------------------------------
     /// @notice Deploys a clone of the DPPNFT contract and initializes it
     /// @param name Name of the new NFT collection
     /// @param symbol Symbol of the new NFT collection
@@ -50,7 +51,8 @@ contract DPPNFTFactory is Ownable {
 
         address clone = implementation.clone();
         DPPNFT dpp = DPPNFT(payable(clone));
-        dpp.initialize(name, symbol, initialOwner, address(this));
+
+        dpp.initialize(name, symbol, initialOwner, admin);
 
         nftContracts[clone] = true;
         allDPPs.push(clone);
@@ -59,17 +61,6 @@ contract DPPNFTFactory is Ownable {
         return clone;
     }
 
-    // ------------------------------------------------------------------------
-    // View Functions
-    // ------------------------------------------------------------------------
-
-    /// @notice Checks if a given address is a valid deployed DPP NFT
-    /// @param nftAddress The address to check
-    function isRegisteredNFT(address nftAddress) external view returns (bool) {
-        return nftContracts[nftAddress];
-    }
-
-    /// @notice Returns all deployed DPP NFT addresses
     function getDeployedDPPs() external view returns (address[] memory) {
         return allDPPs;
     }

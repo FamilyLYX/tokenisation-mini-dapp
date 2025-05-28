@@ -1,4 +1,4 @@
-import { createWalletClient, http, createPublicClient } from "viem";
+import { createWalletClient, http, createPublicClient, pad } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { luksoTestnet } from "viem/chains";
@@ -64,18 +64,24 @@ export async function getAllNFTMetadata(): Promise<number> {
     const deployedNFTs = (await readClient.readContract({
       abi: FACTORY_ABI,
       address: FACTORY_ADDRESS,
-      functionName: "getDeployedNFTs",
+      functionName: "getDeployedDPPs",
     })) as string[];
     // for (const nftAddress of deployedNFTs) {
     //   // 2. Fetch metadata for each NFT
+    //   console.log(tokenId)
     //   const metadata = await readClient.readContract({
     //     abi: NFT_ABI,
     //     address: nftAddress as `0x${string}`,
     //     functionName: "getPublicMetadata",
+    //     args: [tokenId],
     //   });
-    //   const decodedMetadata = JSON.parse(
-    //     fromHex(metadata as `0x${string}`, "string"),
-    //   );
+    //   if (!metadata) {
+    //     console.warn(`No metadata found for NFT at address ${nftAddress}`);
+    //     continue;
+    //   }
+    //   console.log("📄 Metadata for NFT at address:", nftAddress, metadata);
+    //   const decodedMetadata = JSON.parse(metadata as string);
+    //   console.log("Decoded Metadata:", decodedMetadata);
     //   const owner = await readClient.readContract({
     //     abi: NFT_ABI,
     //     address: nftAddress as `0x${string}`,

@@ -21,7 +21,10 @@ contract DeployScript is Script {
         );
 
         // 2. Deploy the factory contract with the implementation address
-        DPPNFTFactory factory = new DPPNFTFactory(address(implementation));
+        DPPNFTFactory factory = new DPPNFTFactory(
+            address(implementation),
+            deployer
+        );
         console.log("DPPNFTFactory deployed at:", address(factory));
         console.log("Owner set to:", deployer);
 
