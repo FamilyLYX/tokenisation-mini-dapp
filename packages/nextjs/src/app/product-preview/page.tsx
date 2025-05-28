@@ -29,7 +29,6 @@ export default function ProductPreview() {
   useEffect(() => {
     const storedProduct = localStorage.getItem("product");
     if (storedProduct) {
-      console.log("Stored product:", JSON.parse(storedProduct));
       setProduct(JSON.parse(storedProduct));
     } else {
       toast.error("Please fill the form first, redirecting to form...");
@@ -88,7 +87,6 @@ export default function ProductPreview() {
       return createNFT(product, productCode);
     },
     onSuccess: async (data) => {
-      console.log("Transaction hash and result", data);
       const dppAddress = data?.dppAddress;
       console.log("DPP Address:", dppAddress);
       if (!dppAddress) {
