@@ -2,66 +2,65 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
-import "./DPPNFT.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./DPPNFT.sol";
 
 error InvalidInitialOwner();
 error InvalidImplementationIsZero();
-error InvalidAdminIsZero();
 
 /// @title DPPNFTFactory
-/// @notice Deploys minimal proxy clones of the DPPNFT contract using EIP-1167
+/// @notice Deploys minimal proxy clones of the DPPNFT contract using EIP-1167 proxy standard
 contract DPPNFTFactory is Ownable {
     using Clones for address;
 
+    /// @notice The address of the DPPNFT implementation contract used for cloning
     address public immutable implementation;
-    address public immutable admin;
 
+    /// @notice Mapping to track deployed DPPNFT clone contracts
     mapping(address => bool) public nftContracts;
+
+    /// @notice List of all deployed DPPNFT clone addresses
     address[] public allDPPs;
 
-    event NFTCreated(address indexed nftAddress, address indexed initialOwner);
-
-    /// @param _implementation The address of the DPPNFT implementation contract
-    /// @param _admin The address of the admin (typically the deployer or a trusted system account)
-    constructor(address _implementation, address _admin) {
+    /// @param _implementation The address of the DPPNFT implementation contract to clone
+    constructor(address _implementation) {
         if (_implementation == address(0)) {
             revert InvalidImplementationIsZero();
         }
-        if (_admin == address(0)) {
-            revert InvalidAdminIsZero();
-        }
-
         implementation = _implementation;
-        admin = _admin;
     }
 
-    /// @notice Deploys a clone of the DPPNFT contract and initializes it
-    /// @param name Name of the new NFT collection
-    /// @param symbol Symbol of the new NFT collection
-    /// @param initialOwner Address of the owner of the new NFT
+    /// @notice Deploys a new clone of the DPPNFT contract and initializes it
+    /// @param name The name for the new NFT collection
+    /// @param symbol The symbol for the new NFT collection
+    /// @param initialOwner The initial owner address of the newly deployed NFT contract
+    /// @return clone The address of the deployed NFT clone contract
     function createNFT(
         string memory name,
         string memory symbol,
         address initialOwner
-    ) external returns (address) {
+    ) external returns (address clone) {
         if (initialOwner == address(0)) {
             revert InvalidInitialOwner();
         }
 
-        address clone = implementation.clone();
-        DPPNFT dpp = DPPNFT(payable(clone));
-
-        dpp.initialize(name, symbol, initialOwner, admin);
+        clone = implementation.clone();
+        DPPNFT(payable(clone)).initialize(name, symbol, initialOwner);
 
         nftContracts[clone] = true;
         allDPPs.push(clone);
 
         emit NFTCreated(clone, initialOwner);
-        return clone;
     }
 
+    /// @notice Returns an array of all deployed DPPNFT clone addresses
+    /// @return An array containing addresses of all deployed NFT clones
     function getDeployedDPPs() external view returns (address[] memory) {
         return allDPPs;
     }
+
+    /// @notice Emitted when a new DPPNFT clone is created
+    /// @param nftAddress The address of the deployed NFT clone contract
+    /// @param initialOwner The initial owner of the deployed NFT clone
+    event NFTCreated(address indexed nftAddress, address indexed initialOwner);
 }
