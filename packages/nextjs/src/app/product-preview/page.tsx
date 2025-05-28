@@ -17,7 +17,7 @@ import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
 import { useDPP } from "@/hooks/useDPP";
 import { v4 as uuidv4 } from "uuid";
-import { pad } from "viem";
+import { encodePacked, keccak256, pad } from "viem";
 export default function ProductPreview() {
   const { push } = useRouter();
   const { createNFT } = useDPPNFTFactory();
@@ -46,11 +46,14 @@ export default function ProductPreview() {
         throw new Error("Product data missing");
       }
       const salt = uuidv4();
+      const uidHash = keccak256(
+        encodePacked(["string", "string"], [salt, productCode]),
+      );
+
       await mintDPP({
         dppAddress,
-        plainUidCode: productCode,
         publicJsonMetadata: JSON.stringify(product),
-        salt,
+        uidHash,
       });
       await fetch("/api/save-salt", {
         method: "POST",
@@ -59,13 +62,15 @@ export default function ProductPreview() {
           tokenId: pad("0x0", { size: 32 }),
           contractAddress: dppAddress,
           salt,
+          uidHash,
+          productCode,
         }),
       });
       return { dppAddress };
     },
     onSuccess: async (data) => {
       console.log("Minting successful:", data);
-      localStorage.removeItem("product");
+      // localStorage.removeItem("product"); UNCOMMENT THIS IF YOU WANT TO CLEAR PRODUCT DATA
       localStorage.removeItem("product-code");
       toast.success("DPP token minted successfully!");
       push("/");

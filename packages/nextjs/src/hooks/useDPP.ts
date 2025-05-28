@@ -11,52 +11,42 @@ export const useDPP = () => {
 
   const mintDPP = async ({
     dppAddress,
-    plainUidCode,
     publicJsonMetadata,
-    salt,
+    uidHash,
   }: {
     dppAddress: `0x${string}`;
-    plainUidCode: string;
     publicJsonMetadata: string;
-    salt: string;
+    uidHash: `0x${string}`; // must be 32 bytes (0x-prefixed)
   }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       console.error("Wallet not connected or account not available.");
       return null;
     }
+
     try {
-      // Simulate the mintDPP call
-      const result = await readClient.simulateContract({
+      // Simulate the call and get a prepared request
+      const { request } = await readClient.simulateContract({
         abi: NFT_ABI,
         address: dppAddress,
         functionName: "mintDPP",
         account: accounts[0],
-        args: [accounts[0], plainUidCode, publicJsonMetadata, salt],
-        chain: client.chain,
-      });
-      console.log("Simulation result:", result);
-      if (!result) {
-        console.error("Simulation failed, no result returned.");
-        return null;
-      }
-
-      // If simulation passes, send the actual transaction
-      const txHash = await client.writeContract({
-        abi: NFT_ABI,
-        address: dppAddress,
-        functionName: "mintDPP",
-        account: accounts[0],
-        args: [accounts[0], plainUidCode, publicJsonMetadata,salt],
+        args: [accounts[0], publicJsonMetadata, uidHash],
         chain: client.chain,
       });
 
+      // Send the actual transaction using the simulated request
+      const txHash = await client.writeContract(request);
+
+      // Wait for transaction to be mined
       const resultTx = await readClient.waitForTransactionReceipt({
         hash: txHash,
       });
+
       if (!resultTx || resultTx.status !== "success") {
-        console.error("Transaction receipt not found.", txHash);
+        console.error("Transaction failed or not mined:", txHash);
         return null;
       }
+
       console.log("Transaction successful:", resultTx);
       return { resultTx };
     } catch (err) {
