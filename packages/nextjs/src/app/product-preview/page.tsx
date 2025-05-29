@@ -48,7 +48,7 @@ export default function ProductPreview() {
       }
       const salt = uuidv4();
       const uidHash = keccak256(
-        encodePacked(["string", "string"], [salt, productCode]),
+        encodePacked(["string", "string"], [salt, productCode])
       );
 
       await mintDPP({
@@ -108,7 +108,7 @@ export default function ProductPreview() {
 
   if (!product) return <div className="text-center p-10">Loading...</div>;
   return (
-    <div className="min-h-screen flex flex-col justify-between px-6 py-6 items-center">
+    <div className="min-h-screen flex flex-col gap-10 px-6 py-6 items-center">
       <Image
         src="/family_logo_white_bg.svg"
         alt="Family Logo"
@@ -116,53 +116,65 @@ export default function ProductPreview() {
         height={64}
         className="mt-2 w-16 h-16"
       />
-
-      <Carousel
-        className="mx-auto mb-16 w-4/5"
-        opts={{
-          align: "start",
-          loop: true,
-        }}
-      >
-        <CarouselContent>
-          {product.images.map((product, index) => (
-            <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/1">
-              {/* eslint-disable @next/next/no-img-element */}
-              <img
-                src={product}
-                alt={`Product image ${index + 1}`}
-                className="w-full object-fit max-h-[400px] rounded-lg shadow-lg"
-              />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious ref={prevRef} />
-        <CarouselNext ref={nextRef} />
-      </Carousel>
-
-      <div className="mt-6 text-center">
-        <p className="text-sm mt-2 px-2 text-gray-500 font-mono leading-relaxed">
-          {product.category} Product
-        </p>
-        <h1 className="text-3xl font-display font-bold text-gray-800 mb-2">
-          {product.title}
-        </h1>
-        <p className="text-sm mt-2 px-2 text-gray-600 font-mono leading-relaxed">
-          {product.description}
-        </p>
-        <p className="text-sm mt-2 px-2 text-gray-600 font-mono leading-relaxed">
-          <span className="font-semibold">Brand:</span> {product.brand}
-        </p>
-      </div>
-
-      <div className="mt-8 w-full">
-        <Button
-          className="w-full rounded-full py-6 font-mono"
-          onClick={() => tokenise()}
-          disabled={isPending || isMinting}
+      <div className="max-w-[400px] md:p-5 w-full flex-1 flex flex-col">
+        <Carousel
+          className="mx-auto mb-5"
+          opts={{
+            align: "start",
+            loop: true,
+          }}
         >
-          {isPending ? "Tokenising..." : "Tokenise"}
-        </Button>
+          <CarouselContent className="">
+            {product.images.map((product, index) => (
+              <CarouselItem key={index} className="lg:basis-1/1">
+                {/* eslint-disable @next/next/no-img-element */}
+                <img
+                  src={product}
+                  alt={`Product image ${index + 1}`}
+                  className="w-[280px] mx-auto object-fit min-h-[318px] max-h-[400px] rounded-lg shadow-lg"
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-0" ref={prevRef} />
+          <CarouselNext className="right-0" ref={nextRef} />
+        </Carousel>
+
+        <div className="mt-5 text-center">
+          {/* <p className="text-sm mt-2 px-2 text-gray-500 font-mono leading-relaxed">
+            {product.category} Product
+          </p> */}
+          <h1 className="text-3xl font-bold text-gray-800 mb-2 long-title">
+            {product.title}
+          </h1>
+          <p className="text-sm mt-2 px-2 text-gray-600 font-mono leading-relaxed">
+            {product.description?.length > 54
+              ? `${product.description?.slice(0, 50)} ...`
+              : product?.description}
+          </p>
+          <p className="text-sm mt-2 px-2 text-gray-600 font-mono leading-relaxed">
+            <span className="font-semibold">Brand:</span> {product.brand}
+          </p>
+        </div>
+
+        <div className="mt-auto w-full">
+          <Button
+            className="w-full rounded-full py-6 font-mono"
+            onClick={() => tokenise()}
+            disabled={isPending || isMinting}
+          >
+            {isPending ? "Tokenising..." : "Tokenise"}
+          </Button>
+        </div>
+
+        {/* <div className="flex justify-between items-end mt-4">
+          <Button className="rounded-full bg-transparent border text-black hover:text-white">
+            <ArrowLeft /> Back
+          </Button>
+          <div className="long-title text-3xl">
+            <span className="long-title text-black/50">Price:</span> 1 LYX
+          </div>
+        </div> */}
       </div>
     </div>
   );

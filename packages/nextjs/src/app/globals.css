@@ -3,6 +3,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: 'TuskerGrotesk'; /*Can be any text*/
+  src: local('TuskerGrotesk'),
+    url('/fonts/TuskerGrotesk-3600Semibold.ttf') format('truetype');
+}
+
+
+.long-title {
+  font-family: 'TuskerGrotesk';
+}
+
+*,
+body {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
