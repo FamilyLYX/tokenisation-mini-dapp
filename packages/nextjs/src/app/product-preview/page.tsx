@@ -18,6 +18,7 @@ import Image from "next/image";
 import { useDPP } from "@/hooks/useDPP";
 import { v4 as uuidv4 } from "uuid";
 import { encodePacked, keccak256, pad } from "viem";
+
 export default function ProductPreview() {
   const { push } = useRouter();
   const { createNFT } = useDPPNFTFactory();
