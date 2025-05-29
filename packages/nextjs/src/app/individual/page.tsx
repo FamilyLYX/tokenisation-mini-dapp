@@ -15,7 +15,9 @@ export default function Individual() {
         className="mt-2 w-16 h-16"
       />
       <div className="border border-gray-200 rounded-xl p-12 w-full max-w-sm text-center shadow-sm gap-6">
-        <h1 className="text-5xl font-display font-bold mb-4">Individual</h1>
+        <h1 className="text-5xl font-display font-bold mb-4 long-title">
+          Individual
+        </h1>
 
         <div className="flex justify-center mb-6">
           <Image

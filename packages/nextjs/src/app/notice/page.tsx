@@ -38,7 +38,7 @@ export default function ImportantNotice() {
           height={64}
           className="mt-2 w-16 h-16"
         />
-        <h1 className="text-3xl text-[#FF0000] text-center font-bold">
+        <h1 className="text-3xl text-[#FF0000] text-center font-bold long-title">
           Important Notice
         </h1>
 
@@ -49,9 +49,17 @@ export default function ImportantNotice() {
           </p>
           <br />
           <ul className="list-disc pl-4">
-            <li>Embed the 6-digit code we generate on your physical product.</li>
-            <li>Ensure the code is legible and permanently affixed to the product.</li>
-            <li><strong>Note it down exactly as shown—it is case-sensitive.</strong></li>
+            <li>
+              Embed the 6-digit code we generate on your physical product.
+            </li>
+            <li>
+              Ensure the code is legible and permanently affixed to the product.
+            </li>
+            <li>
+              <strong>
+                Note it down exactly as shown—it is case-sensitive.
+              </strong>
+            </li>
             <li>You will need this code when listing your product for sale.</li>
           </ul>
         </div>
@@ -71,7 +79,9 @@ export default function ImportantNotice() {
 
           <DialogContent className="max-w-xs bg-white rounded-2xl p-6 text-center">
             <DialogHeader>
-              <h2 className="text-2xl font-bold mb-4">6-Digit Code</h2>
+              <h2 className="text-2xl font-bold mb-4 text-center long-title">
+                6-Digit Code
+              </h2>
             </DialogHeader>
             <div className="flex justify-center gap-3 text-2xl font-mono mb-6">
               {code.split("").map((digit, index) => (
