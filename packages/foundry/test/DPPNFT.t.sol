@@ -21,6 +21,7 @@ contract DPPNFTTest is Test {
     bytes32 public uidHash;
     bytes32 public newUidHash;
     bytes32 public tokenId;
+    bytes32 public constant DPP_METADATA_KEY = keccak256("DPP_METADATA");
 
     function setUp() public {
         dpp = new DPPNFT();
@@ -125,7 +126,7 @@ contract DPPNFTTest is Test {
         // Fetch public JSON metadata
         bytes memory metadataBytes = dpp.getDataForTokenId(
             tokenId,
-            _LSP4_METADATA_KEY
+            DPP_METADATA_KEY
         );
         string memory fetchedMetadata = string(metadataBytes);
         assertEq(fetchedMetadata, publicMetadata);

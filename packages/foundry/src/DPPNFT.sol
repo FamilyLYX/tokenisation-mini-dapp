@@ -2,7 +2,6 @@
 pragma solidity ^0.8.17;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {_LSP4_METADATA_KEY} from "@lukso/lsp4-contracts/contracts/LSP4Constants.sol";
 import {LSP8MintableInitAbstract} from "@lukso/lsp8-contracts/contracts/presets/LSP8MintableInitAbstract.sol";
 import {LSP8IdentifiableDigitalAssetInitAbstract} from "@lukso/lsp8-contracts/contracts/LSP8IdentifiableDigitalAssetInitAbstract.sol";
@@ -28,9 +27,10 @@ error AddressZeroNotAllowed();
  * @notice A LUKSO LSP8-compatible NFT that stores both public and encrypted metadata.
  * @dev UID verification required for token transfer, and direct transfer is disabled.
  */
-contract DPPNFT is Initializable, OwnableUpgradeable, LSP8MintableInitAbstract {
+contract DPPNFT is Initializable, LSP8MintableInitAbstract {
     /// @dev Internal data key used for storing the UID hash
     bytes32 private constant DPP_UID_HASH_KEY = keccak256("DPP_UID_Hash");
+    bytes32 private constant DPP_METADATA_KEY = keccak256("DPP_METADATA");
 
     /// @notice The next token index to be minted
     uint256 public nextTokenIndex;
@@ -69,7 +69,7 @@ contract DPPNFT is Initializable, OwnableUpgradeable, LSP8MintableInitAbstract {
 
         _setDataForTokenId(
             tokenId,
-            _LSP4_METADATA_KEY,
+            DPP_METADATA_KEY,
             bytes(publicJsonMetadata)
         );
         _setDataForTokenId(tokenId, DPP_UID_HASH_KEY, abi.encode(uidHash));
