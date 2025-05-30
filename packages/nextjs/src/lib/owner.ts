@@ -1,4 +1,4 @@
-import { createWalletClient, http, createPublicClient, pad } from "viem";
+import { createWalletClient, http, createPublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { luksoTestnet } from "viem/chains";

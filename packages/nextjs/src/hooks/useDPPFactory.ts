@@ -17,7 +17,7 @@ export const useDPPNFTFactory = () => {
   const createNFT = async (formData: Product, plainUidCode: string) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
-      return null;
+      throw new Error("Wallet not connected or account not available.");
     }
 
     try {
@@ -60,7 +60,11 @@ export const useDPPNFTFactory = () => {
       const resultTx = await readClient.waitForTransactionReceipt({
         hash: txHash,
       });
-      console.log("Transaction successful:", resultTx);
+      if (!resultTx || resultTx.status !== "success") {
+        console.error("Transaction failed or not mined:", txHash);
+        toast.error("NFT creation transaction failed.");
+        throw new Error("Transaction failed or not mined: " + txHash);
+      }
       toast.success("NFT creation transaction sent!");
       return {
         resultTx,
@@ -70,7 +74,7 @@ export const useDPPNFTFactory = () => {
     } catch (err) {
       console.error("Error creating NFT:", err);
       toast.error("Failed to create NFT.");
-      return null;
+      throw new Error("Error creating NFT: " + err);
     }
   };
 

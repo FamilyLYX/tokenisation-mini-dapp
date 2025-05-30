@@ -20,7 +20,7 @@ export const useDPP = () => {
   }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       console.error("Wallet not connected or account not available.");
-      return null;
+      throw new Error("Wallet not connected or account not available.");
     }
 
     try {
@@ -47,11 +47,10 @@ export const useDPP = () => {
         return null;
       }
 
-      console.log("Transaction successful:", resultTx);
       return { resultTx };
     } catch (err) {
       console.error("Error minting DPP:", err);
-      return null;
+      throw new Error("Error minting DPP: " + err);
     }
   };
 

@@ -48,25 +48,35 @@ export default function ProductPreview() {
       }
       const salt = uuidv4();
       const uidHash = keccak256(
-        encodePacked(["string", "string"], [salt, productCode])
+        encodePacked(["string", "string"], [salt, productCode]),
       );
-
-      await mintDPP({
-        dppAddress,
-        publicJsonMetadata: JSON.stringify(product),
-        uidHash,
-      });
-      await fetch("/api/save-salt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tokenId: pad("0x0", { size: 32 }),
-          contractAddress: dppAddress,
-          salt,
+      try {
+        await mintDPP({
+          dppAddress,
+          publicJsonMetadata: JSON.stringify(product),
           uidHash,
-          productCode,
-        }),
-      });
+        });
+      } catch (error) {
+        console.error("Error minting DPP token:", error);
+        throw new Error("Failed to mint DPP token");
+      }
+      try {
+        await fetch("/api/save-salt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tokenId: pad("0x0", { size: 32 }),
+            contractAddress: dppAddress,
+            salt,
+            uidHash,
+            productCode,
+          }),
+        });
+      } catch (error) {
+        console.error("Error saving salt to server:", error);
+        throw new Error("Failed to save salt to server");
+      }
+
       return { dppAddress };
     },
     onSuccess: async (data) => {
@@ -90,7 +100,12 @@ export default function ProductPreview() {
       if (!product) {
         throw new Error("Product data missing");
       }
-      return createNFT(product, productCode);
+      try {
+        return await createNFT(product, productCode);
+      } catch (error) {
+        console.error("Error creating NFT:", error);
+        throw new Error("Failed to create NFT");
+      }
     },
     onSuccess: async (data) => {
       const dppAddress = data?.dppAddress;
@@ -166,15 +181,6 @@ export default function ProductPreview() {
             {isPending ? "Tokenising..." : "Tokenise"}
           </Button>
         </div>
-
-        {/* <div className="flex justify-between items-end mt-4">
-          <Button className="rounded-full bg-transparent border text-black hover:text-white">
-            <ArrowLeft /> Back
-          </Button>
-          <div className="long-title text-3xl">
-            <span className="long-title text-black/50">Price:</span> 1 LYX
-          </div>
-        </div> */}
       </div>
     </div>
   );
