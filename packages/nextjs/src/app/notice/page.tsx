@@ -38,7 +38,7 @@ export default function ImportantNotice() {
           height={64}
           className="mt-2 w-16 h-16"
         />
-        <h1 className="text-3xl text-[#FF0000] text-center font-bold long-title">
+        <h1 className="text-5xl text-[#FF0000] text-center font-bold long-title">
           Important Notice
         </h1>
 
