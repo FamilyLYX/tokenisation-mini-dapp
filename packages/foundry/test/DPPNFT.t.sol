@@ -67,14 +67,7 @@ contract DPPNFTTest is Test {
         tokenId = bytes32(0);
 
         vm.prank(user);
-        dpp.transferWithUIDRotation(
-            tokenId,
-            newOwner,
-            "",
-            salt,
-            uid,
-            newUidHash
-        );
+        dpp.transferWithUIDRotation(tokenId, newOwner, "", salt, uid, newUidHash);
 
         address owner = dpp.tokenOwnerOf(tokenId);
         assertEq(owner, newOwner);
@@ -88,14 +81,7 @@ contract DPPNFTTest is Test {
 
         vm.prank(user);
         vm.expectRevert(InvalidUID.selector);
-        dpp.transferWithUIDRotation(
-            tokenId,
-            newOwner,
-            "",
-            "wrong-salt",
-            "wrong-uid",
-            newUidHash
-        );
+        dpp.transferWithUIDRotation(tokenId, newOwner, "", "wrong-salt", "wrong-uid", newUidHash);
     }
 
     function testTransferWithUIDRotation_NotTokenOwner() public {
@@ -106,14 +92,7 @@ contract DPPNFTTest is Test {
 
         vm.prank(deployer); // not the token owner
         vm.expectRevert(NotTokenOwner.selector);
-        dpp.transferWithUIDRotation(
-            tokenId,
-            newOwner,
-            "",
-            salt,
-            uid,
-            newUidHash
-        );
+        dpp.transferWithUIDRotation(tokenId, newOwner, "", salt, uid, newUidHash);
     }
 
     function testFetchStoredMetadataAndUIDHash() public {
@@ -124,19 +103,19 @@ contract DPPNFTTest is Test {
         tokenId = bytes32(0);
 
         // Fetch public JSON metadata
-        bytes memory metadataBytes = dpp.getDataForTokenId(
-            tokenId,
-            DPP_METADATA_KEY
-        );
+        bytes memory metadataBytes = dpp.getDataForTokenId(tokenId, DPP_METADATA_KEY);
         string memory fetchedMetadata = string(metadataBytes);
         assertEq(fetchedMetadata, publicMetadata);
 
         // Fetch and verify UID hash
-        bytes memory storedUIDBytes = dpp.getDataForTokenId(
-            tokenId,
-            keccak256("DPP_UID_Hash")
-        );
+        bytes memory storedUIDBytes = dpp.getDataForTokenId(tokenId, keccak256("DPP_UID_Hash"));
         bytes32 storedUIDHash = abi.decode(storedUIDBytes, (bytes32));
         assertEq(storedUIDHash, uidHash);
+    }
+
+    function testRevertOnNormalMint() public {
+        vm.prank(deployer);
+        vm.expectRevert(MintingDisabled.selector);
+        dpp.mint(user, bytes32(0), true, "");
     }
 }
