@@ -1,9 +1,8 @@
-import { createWalletClient, http, createPublicClient } from "viem";
+import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
-import { luksoTestnet } from "viem/chains";
 import { Product } from "@/types";
-
+import { appConfig, readClient } from "./appConfig";
 type createNFTResponse = { hash: string };
 
 if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
@@ -14,16 +13,10 @@ const account = privateKeyToAccount(
   process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`,
 );
 
-// Create the public client for reading from contracts
-const readClient = createPublicClient({
-  chain: luksoTestnet,
-  transport: http(), // Using the same transport for reading
-});
-
 const walletClient = createWalletClient({
   account,
-  chain: luksoTestnet,
-  transport: http(), // Make sure the transport is properly configured for the testnet
+  chain: appConfig.chain,
+  transport: appConfig.chainUrl,
 });
 
 export async function testCreateNFT(

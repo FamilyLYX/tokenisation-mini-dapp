@@ -2,14 +2,8 @@ import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { NFT_ABI } from "@/constants/dpp";
-import { createPublicClient, http } from "viem";
-import { luksoTestnet } from "viem/chains";
 import { Product } from "@/types";
-
-const readClient = createPublicClient({
-  chain: luksoTestnet,
-  transport: http("https://rpc.testnet.lukso.network"),
-});
+import { readClient } from "@/lib/appConfig";
 
 export const useDPPNFTFactory = () => {
   const { client, accounts, walletConnected } = useUpProvider();
