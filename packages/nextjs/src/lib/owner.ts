@@ -1,4 +1,4 @@
-import { createWalletClient, http } from "viem";
+import { createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { Product } from "@/types";
