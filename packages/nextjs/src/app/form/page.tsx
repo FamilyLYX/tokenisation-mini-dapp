@@ -50,6 +50,9 @@ export default function FormPage() {
     const res = await fetch("/api/upload", {
       method: "POST",
       body: formDataFile,
+      headers: {
+        "x-api-key": process.env.NEXT_PUBLIC_API_SECRET_KEY!,
+      },
     });
 
     const data = await res.json();

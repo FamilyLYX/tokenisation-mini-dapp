@@ -63,7 +63,10 @@ export default function ProductPreview() {
       try {
         await fetch("/api/save-salt", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.NEXT_PUBLIC_API_SECRET_KEY!,
+          },
           body: JSON.stringify({
             tokenId: pad("0x0", { size: 32 }),
             contractAddress: dppAddress,
