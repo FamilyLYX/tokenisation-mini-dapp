@@ -18,7 +18,6 @@ export const useDPP = () => {
       console.error("Wallet not connected or account not available.");
       throw new Error("Wallet not connected or account not available.");
     }
-
     try {
       // Simulate the call and get a prepared request
       const { request } = await readClient.simulateContract({

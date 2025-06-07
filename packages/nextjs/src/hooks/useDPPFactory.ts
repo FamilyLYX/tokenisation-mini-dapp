@@ -34,8 +34,6 @@ export const useDPPNFTFactory = () => {
       }
       const txHash = await client.writeContract(request);
 
-      console.log("Expected NFT contract address:", cloneAddress);
-
       // const tx = await client.writeContract({
       //   abi: FACTORY_ABI,
       //   address: FACTORY_ADDRESS,
