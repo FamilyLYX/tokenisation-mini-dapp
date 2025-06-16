@@ -1,15 +1,17 @@
-import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { NFT_ABI } from "@/constants/dpp";
 import { Product } from "@/types";
 import { readClient } from "@/lib/appConfig";
+import { useAccount, useWalletClient } from "wagmi";
 
 export const useDPPNFTFactory = () => {
-  const { client, accounts, walletConnected } = useUpProvider();
+  const { data: client } = useWalletClient();
+
+  const { address: account } = useAccount();
 
   const createNFT = async (formData: Product, plainUidCode: string) => {
-    if (!client || !walletConnected || !accounts?.[0]) {
+    if (!client || !account) {
       toast.error("Please connect your Universal Profile wallet.");
       throw new Error("Wallet not connected or account not available.");
     }
@@ -20,18 +22,16 @@ export const useDPPNFTFactory = () => {
           abi: FACTORY_ABI,
           address: FACTORY_ADDRESS,
           functionName: "createNFT",
-          account: accounts[0] as `0x${string}`,
+          account: account as `0x${string}`,
           chain: client.chain,
-          args: [
-            formData.title,
-            formData.title + "_" + plainUidCode,
-            accounts[0],
-          ],
+          args: [formData.title, formData.title + "_" + plainUidCode, account],
         });
       if (!cloneAddress) {
         toast.error("Failed to simulate NFT creation.");
         return null;
       }
+
+      console.log("clone address", cloneAddress);
       const txHash = await client.writeContract(request);
 
       // const tx = await client.writeContract({
@@ -86,7 +86,7 @@ export const useDPPNFTFactory = () => {
   };
 
   const getNFTMetadata = async (
-    nftAddress: `0x${string}`,
+    nftAddress: `0x${string}`
   ): Promise<Product | null> => {
     if (!client) return null;
     try {
@@ -104,7 +104,7 @@ export const useDPPNFTFactory = () => {
   };
 
   const isRegisteredNFT = async (
-    nftAddress: `0x${string}`,
+    nftAddress: `0x${string}`
   ): Promise<boolean> => {
     if (!client) return false;
     try {
@@ -126,7 +126,7 @@ export const useDPPNFTFactory = () => {
     getDeployedDPPs,
     getNFTMetadata,
     isRegisteredNFT,
-    connectedWallet: accounts?.[0],
-    walletConnected,
+    connectedWallet: account,
+    walletConnected: Boolean(account),
   };
 };

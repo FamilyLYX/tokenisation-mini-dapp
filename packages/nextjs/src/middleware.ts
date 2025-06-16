@@ -31,4 +31,4 @@ export function middleware(request: NextRequest) {
 // Configure the paths that should be protected by the middleware
 export const config = {
   matcher: "/api/:path*",
-}; 
+};

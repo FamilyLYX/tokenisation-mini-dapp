@@ -4,6 +4,7 @@ import { getAllNFTMetadata } from "@/lib/owner";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 export default function Home() {
   const { push } = useRouter();
   const { data: countOfContracts, isPending } = useQuery({
@@ -21,6 +22,7 @@ export default function Home() {
           className="mt-2 w-16 h-16"
         />
       </div>
+      <ConnectButton showBalance={false} />
 
       <span className="mb-4 inline-block bg-gray-200 text-gray-800 text-xs font-medium px-2 py-1 rounded-full">
         {isPending ? (

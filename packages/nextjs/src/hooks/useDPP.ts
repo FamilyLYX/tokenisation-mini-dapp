@@ -1,9 +1,10 @@
-import { useUpProvider } from "@/components/up-provider";
 import { NFT_ABI } from "@/constants/dpp";
 import { readClient } from "@/lib/appConfig";
+import { useAccount, useWalletClient } from "wagmi";
 
 export const useDPP = () => {
-  const { client, accounts, walletConnected } = useUpProvider();
+  const { data: client } = useWalletClient();
+  const { address: account } = useAccount();
 
   const mintDPP = async ({
     dppAddress,
@@ -14,7 +15,8 @@ export const useDPP = () => {
     publicJsonMetadata: string;
     uidHash: `0x${string}`; // must be 32 bytes (0x-prefixed)
   }) => {
-    if (!client || !walletConnected || !accounts?.[0]) {
+    console.log("minting...", dppAddress, publicJsonMetadata);
+    if (!client || !account) {
       console.error("Wallet not connected or account not available.");
       throw new Error("Wallet not connected or account not available.");
     }
@@ -24,8 +26,8 @@ export const useDPP = () => {
         abi: NFT_ABI,
         address: dppAddress,
         functionName: "mintDPP",
-        account: accounts[0],
-        args: [accounts[0], publicJsonMetadata, uidHash],
+        account: account,
+        args: [account, publicJsonMetadata, uidHash],
         chain: client.chain,
       });
 

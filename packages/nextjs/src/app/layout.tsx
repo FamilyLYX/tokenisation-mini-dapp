@@ -1,5 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
+import "@rainbow-me/rainbowkit/styles.css";
 import "./globals.css";
 // import { Space_Grotesk } from "next/font/google";
 // import localFont from "next/font/local";
