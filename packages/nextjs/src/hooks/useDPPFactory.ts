@@ -1,14 +1,17 @@
 import { toast } from "sonner";
-import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
+import { FACTORY_ABI, useFactoryAddress } from "@/constants/factory";
 import { NFT_ABI } from "@/constants/dpp";
 import { Product } from "@/types";
-import { readClient } from "@/lib/appConfig";
 import { useAccount, useWalletClient } from "wagmi";
+import { useReadClient } from "@/lib/appConfig";
+import { luksoTestnet } from "viem/chains";
 
 export const useDPPNFTFactory = () => {
   const { data: client } = useWalletClient();
+  const readClient = useReadClient();
+  const { address: account, chain } = useAccount();
 
-  const { address: account } = useAccount();
+  const factoryAddress = useFactoryAddress();
 
   const createNFT = async (formData: Product, plainUidCode: string) => {
     if (!client || !account) {
@@ -20,11 +23,19 @@ export const useDPPNFTFactory = () => {
       const { request, result: cloneAddress } =
         await readClient.simulateContract({
           abi: FACTORY_ABI,
-          address: FACTORY_ADDRESS,
+          address: factoryAddress,
           functionName: "createNFT",
           account: account as `0x${string}`,
           chain: client.chain,
-          args: [formData.title, formData.title + "_" + plainUidCode, account],
+          args:
+            chain?.id === luksoTestnet.id
+              ? [formData.title, formData.title + "_" + plainUidCode, account]
+              : [
+                  formData.title,
+                  formData.title + "_" + plainUidCode,
+                  account,
+                  "",
+                ],
         });
       if (!cloneAddress) {
         toast.error("Failed to simulate NFT creation.");
@@ -75,7 +86,7 @@ export const useDPPNFTFactory = () => {
     try {
       const nfts = await readClient.readContract({
         abi: FACTORY_ABI,
-        address: FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "getDeployedDPPs",
       });
       return nfts as string[];
@@ -110,7 +121,7 @@ export const useDPPNFTFactory = () => {
     try {
       const result = await readClient.readContract({
         abi: FACTORY_ABI,
-        address: FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "isRegisteredNFT",
         args: [nftAddress],
       });

@@ -7,6 +7,8 @@ import { config } from "../lib/wagmi";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { luksoTestnet } from "wagmi/chains";
+// import { luksoTestnet } from "wagmi/chains";
 
 const TokenisationApp = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -15,7 +17,7 @@ const TokenisationApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem={false}>
       {/* <UpProvider> */}
-      <RainbowKitProvider>
+      <RainbowKitProvider initialChain={luksoTestnet}>
         {path !== "/" && (
           <div className="absolute top-4 left-4">
             <button onClick={() => router.back()} className="flex items-center">

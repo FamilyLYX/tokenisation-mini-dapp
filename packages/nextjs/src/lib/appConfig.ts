@@ -1,5 +1,6 @@
 import { createPublicClient, http } from "viem";
-import { xdc, xdcTestnet } from "viem/chains";
+import { luksoTestnet, xdc, xdcTestnet } from "viem/chains";
+import { useAccount } from "wagmi";
 
 interface Config {
   salt_db: string;
@@ -15,7 +16,7 @@ export const TESTNET_CONFIG = {
   salt_db: "dpp_salts_testnet",
   vaults_db: "vaults_testnet",
   chain: xdcTestnet,
-  chainUrl: http("https://rpc.ankr.com/xdc_testnet"),
+  chainUrl: http("https://erpc.apothem.network"),
   adminAddress:
     (process.env.NEXT_PUBLIC_ADMIN_TESTNET_ADDRESS as `0x${string}`) ??
     "0x9fBd3638Fc8D6c8C25f44200f5dbD1e3e9F25959",
@@ -42,4 +43,12 @@ const readClient = createPublicClient({
   transport: appConfig.chainUrl,
 });
 
-export { appConfig, readClient };
+const useReadClient = () => {
+  const { chain: connectedChain } = useAccount();
+  return createPublicClient({
+    chain: connectedChain ?? luksoTestnet,
+    transport: http(),
+  });
+};
+
+export { appConfig, readClient, useReadClient };

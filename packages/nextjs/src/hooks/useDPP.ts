@@ -1,10 +1,11 @@
 import { NFT_ABI } from "@/constants/dpp";
-import { readClient } from "@/lib/appConfig";
+import { useReadClient } from "@/lib/appConfig";
 import { useAccount, useWalletClient } from "wagmi";
 
 export const useDPP = () => {
   const { data: client } = useWalletClient();
   const { address: account } = useAccount();
+  const readClient = useReadClient();
 
   const mintDPP = async ({
     dppAddress,

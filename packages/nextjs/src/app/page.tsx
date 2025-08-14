@@ -5,11 +5,20 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useFactoryAddress } from "@/constants/factory";
+import { useReadClient } from "@/lib/appConfig";
+import { useAccount } from "wagmi";
+
 export default function Home() {
+  const factoryAddress = useFactoryAddress();
+  const readClient = useReadClient();
+  const { chain } = useAccount();
+
   const { push } = useRouter();
   const { data: countOfContracts, isPending } = useQuery({
-    queryKey: ["nftMetadata"],
-    queryFn: getAllNFTMetadata,
+    queryKey: ["nftMetadata", chain?.id, factoryAddress],
+    queryFn: () => getAllNFTMetadata(readClient, factoryAddress),
+    enabled: !!chain?.id && !!factoryAddress,
   });
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 text-center bg-white">
