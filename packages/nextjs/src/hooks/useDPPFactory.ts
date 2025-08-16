@@ -1,5 +1,9 @@
 import { toast } from "sonner";
-import { FACTORY_ABI, useFactoryAddress } from "@/constants/factory";
+import {
+  FACTORY_ABI,
+  FACTORY_ABI_OLD,
+  useFactoryAddress,
+} from "@/constants/factory";
 import { NFT_ABI } from "@/constants/dpp";
 import { Product } from "@/types";
 import { useAccount, useWalletClient } from "wagmi";
@@ -22,7 +26,7 @@ export const useDPPNFTFactory = () => {
     try {
       const { request, result: cloneAddress } =
         await readClient.simulateContract({
-          abi: FACTORY_ABI,
+          abi: chain?.id === luksoTestnet.id ? FACTORY_ABI_OLD : FACTORY_ABI,
           address: factoryAddress,
           functionName: "createNFT",
           account: account as `0x${string}`,
