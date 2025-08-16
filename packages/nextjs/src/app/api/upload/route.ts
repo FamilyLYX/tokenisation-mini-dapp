@@ -13,8 +13,10 @@ export async function POST(req: NextRequest) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   const credentialsTest = {
-    accessKeyId: process.env.ACCESS_KEY_ID ? "present" : "missing",
-    secretAccessKey: process.env.SECRET_ACCESS_KEY ? "present" : "missing",
+    accessKeyId: process.env.NEXT_PUBLIC_ACCESS_KEY_ID ? "present" : "missing",
+    secretAccessKey: process.env.NEXT_PUBLIC_SECRET_ACCESS_KEY
+      ? "present"
+      : "missing",
   };
 
   try {

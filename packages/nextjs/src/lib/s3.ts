@@ -5,8 +5,8 @@ import { Buffer } from "buffer";
 const s3 = new S3Client({
   region: process.env.REGION!,
   credentials: {
-    accessKeyId: process.env.ACCESS_KEY_ID!,
-    secretAccessKey: process.env.SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.NEXT_PUBLIC_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.NEXT_PUBLIC_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -19,7 +19,7 @@ export async function uploadImageToS3(
     const Key = `uploads/${uuidv4()}-${fileName}`;
 
     const command = new PutObjectCommand({
-      Bucket: process.env.S3_BUCKET!,
+      Bucket: process.env.NEXT_PUBLIC_S3_BUCKET!,
       Key,
       Body: fileBuffer,
       ContentType: mimeType,
@@ -27,7 +27,7 @@ export async function uploadImageToS3(
 
     await s3.send(command);
 
-    return `https://${process.env.S3_BUCKET}.s3.${process.env.REGION}.amazonaws.com/${Key}`;
+    return `https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.${process.env.NEXT_PUBLIC_REGION}.amazonaws.com/${Key}`;
   } catch (error) {
     throw {
       error,
