@@ -1,15 +1,24 @@
-import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
-import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
+import {
+  FACTORY_ABI,
+  FACTORY_ABI_OLD,
+  useFactoryAddress,
+} from "@/constants/factory";
 import { NFT_ABI } from "@/constants/dpp";
 import { Product } from "@/types";
-import { readClient } from "@/lib/appConfig";
+import { useAccount, useWalletClient } from "wagmi";
+import { useReadClient } from "@/lib/appConfig";
+import { luksoTestnet } from "viem/chains";
 
 export const useDPPNFTFactory = () => {
-  const { client, accounts, walletConnected } = useUpProvider();
+  const { data: client } = useWalletClient();
+  const readClient = useReadClient();
+  const { address: account, chain } = useAccount();
+
+  const factoryAddress = useFactoryAddress();
 
   const createNFT = async (formData: Product, plainUidCode: string) => {
-    if (!client || !walletConnected || !accounts?.[0]) {
+    if (!client || !account) {
       toast.error("Please connect your Universal Profile wallet.");
       throw new Error("Wallet not connected or account not available.");
     }
@@ -17,21 +26,27 @@ export const useDPPNFTFactory = () => {
     try {
       const { request, result: cloneAddress } =
         await readClient.simulateContract({
-          abi: FACTORY_ABI,
-          address: FACTORY_ADDRESS,
+          abi: chain?.id === luksoTestnet.id ? FACTORY_ABI_OLD : FACTORY_ABI,
+          address: factoryAddress,
           functionName: "createNFT",
-          account: accounts[0] as `0x${string}`,
+          account: account as `0x${string}`,
           chain: client.chain,
-          args: [
-            formData.title,
-            formData.title + "_" + plainUidCode,
-            accounts[0],
-          ],
+          args:
+            chain?.id === luksoTestnet.id
+              ? [formData.title, formData.title + "_" + plainUidCode, account]
+              : [
+                  formData.title,
+                  formData.title + "_" + plainUidCode,
+                  account,
+                  "",
+                ],
         });
       if (!cloneAddress) {
         toast.error("Failed to simulate NFT creation.");
         return null;
       }
+
+      console.log("clone address", cloneAddress);
       const txHash = await client.writeContract(request);
 
       // const tx = await client.writeContract({
@@ -75,7 +90,7 @@ export const useDPPNFTFactory = () => {
     try {
       const nfts = await readClient.readContract({
         abi: FACTORY_ABI,
-        address: FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "getDeployedDPPs",
       });
       return nfts as string[];
@@ -86,7 +101,7 @@ export const useDPPNFTFactory = () => {
   };
 
   const getNFTMetadata = async (
-    nftAddress: `0x${string}`,
+    nftAddress: `0x${string}`
   ): Promise<Product | null> => {
     if (!client) return null;
     try {
@@ -104,13 +119,13 @@ export const useDPPNFTFactory = () => {
   };
 
   const isRegisteredNFT = async (
-    nftAddress: `0x${string}`,
+    nftAddress: `0x${string}`
   ): Promise<boolean> => {
     if (!client) return false;
     try {
       const result = await readClient.readContract({
         abi: FACTORY_ABI,
-        address: FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "isRegisteredNFT",
         args: [nftAddress],
       });
@@ -126,7 +141,7 @@ export const useDPPNFTFactory = () => {
     getDeployedDPPs,
     getNFTMetadata,
     isRegisteredNFT,
-    connectedWallet: accounts?.[0],
-    walletConnected,
+    connectedWallet: account,
+    walletConnected: Boolean(account),
   };
 };

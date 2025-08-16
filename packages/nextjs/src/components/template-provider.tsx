@@ -3,10 +3,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "./ui/sonner";
-import { UpProvider } from "./up-provider";
 import { config } from "../lib/wagmi";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { luksoTestnet } from "wagmi/chains";
+// import { luksoTestnet } from "wagmi/chains";
 
 const TokenisationApp = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -14,7 +16,8 @@ const TokenisationApp = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem={false}>
-      <UpProvider>
+      {/* <UpProvider> */}
+      <RainbowKitProvider initialChain={luksoTestnet}>
         {path !== "/" && (
           <div className="absolute top-4 left-4">
             <button onClick={() => router.back()} className="flex items-center">
@@ -24,7 +27,8 @@ const TokenisationApp = ({ children }: { children: React.ReactNode }) => {
           </div>
         )}
         {children}
-      </UpProvider>
+      </RainbowKitProvider>
+      {/* </UpProvider> */}
       <Toaster />
     </ThemeProvider>
   );

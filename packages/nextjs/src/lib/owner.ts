@@ -1,8 +1,8 @@
-import { createWalletClient } from "viem";
+import { createWalletClient, PublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
+import { FACTORY_ABI } from "@/constants/factory";
 import { Product } from "@/types";
-import { appConfig, readClient } from "./appConfig";
+import { appConfig } from "./appConfig";
 type createNFTResponse = { hash: string };
 
 if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
@@ -10,7 +10,7 @@ if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
 }
 
 const account = privateKeyToAccount(
-  process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`,
+  process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`
 );
 
 const walletClient = createWalletClient({
@@ -22,6 +22,7 @@ const walletClient = createWalletClient({
 export async function testCreateNFT(
   formData: Product,
   plainUidCode: string,
+  factoryAddress: `0x${string}`
 ): Promise<createNFTResponse> {
   try {
     const publicJsonMetadata = JSON.stringify(formData);
@@ -30,7 +31,7 @@ export async function testCreateNFT(
     // Make the contract call
     const tx = await walletClient.writeContract({
       abi: FACTORY_ABI,
-      address: FACTORY_ADDRESS,
+      address: factoryAddress,
       functionName: "createNFT", // Replace with the correct function name in the factory contract
       args: [
         formData.title, // Name for the NFT
@@ -51,12 +52,19 @@ export async function testCreateNFT(
 }
 
 // Function to fetch metadata of all deployed NFTs
-export async function getAllNFTMetadata(): Promise<number> {
+export async function getAllNFTMetadata(
+  readClient: PublicClient,
+  factoryAddress: `0x${string}`
+): Promise<number> {
   try {
+    console.log(
+      "🔍 Fetching deployed NFTs from factory contract",
+      readClient.chain
+    );
     // 1. Fetch deployed NFTs from the factory contract
     const deployedNFTs = (await readClient.readContract({
       abi: FACTORY_ABI,
-      address: FACTORY_ADDRESS,
+      address: factoryAddress,
       functionName: "getDeployedDPPs",
     })) as string[];
     // for (const nftAddress of deployedNFTs) {

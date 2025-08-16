@@ -1,0 +1,34 @@
+{
+  "hosting": {
+    "site": "tokenisation",
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source":"/api/upload",
+        "function":"nextServer1/api/upload"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "source": ".",
+      "codebase": "test-new",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ],
+      "runtime": "nodejs22"
+    }
+  ]
+}

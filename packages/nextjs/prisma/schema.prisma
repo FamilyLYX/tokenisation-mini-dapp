@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Salt {
+    id              String   @id @default(cuid())
+    tokenId         String   @map("token_id")
+    contractAddress String   @map("contract_address")
+    salt            String
+    uidHash         String   @map("uid_hash")
+    uidCode         String   @map("uid_code")
+    createdAt       DateTime @default(now()) @map("created_at")
+    updatedAt       DateTime @updatedAt @map("updated_at")
+
+    @@map("salts")
+}
+
+model Vault {
+    id        String   @id @default(cuid())
+    address   String   @unique
+    data      String
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("vaults")
+}

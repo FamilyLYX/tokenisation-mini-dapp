@@ -48,8 +48,10 @@ export default function ProductPreview() {
       }
       const salt = uuidv4();
       const uidHash = keccak256(
-        encodePacked(["string", "string"], [salt, productCode]),
+        encodePacked(["string", "string"], [salt, productCode])
       );
+
+      console.log("product", product);
       try {
         await mintDPP({
           dppAddress,
@@ -111,6 +113,7 @@ export default function ProductPreview() {
       }
     },
     onSuccess: async (data) => {
+      console.log("mintdata", data);
       const dppAddress = data?.dppAddress;
       console.log("DPP Address:", dppAddress);
       if (!dppAddress) {
