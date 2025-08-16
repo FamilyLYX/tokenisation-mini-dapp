@@ -15,16 +15,20 @@ export async function uploadImageToS3(
   fileName: string,
   mimeType: string
 ) {
-  const Key = `uploads/${uuidv4()}-${fileName}`;
+  try {
+    const Key = `uploads/${uuidv4()}-${fileName}`;
 
-  const command = new PutObjectCommand({
-    Bucket: process.env.S3_BUCKET!,
-    Key,
-    Body: fileBuffer,
-    ContentType: mimeType,
-  });
+    const command = new PutObjectCommand({
+      Bucket: process.env.S3_BUCKET!,
+      Key,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    });
 
-  await s3.send(command);
+    await s3.send(command);
 
-  return `https://${process.env.S3_BUCKET}.s3.${process.env.REGION}.amazonaws.com/${Key}`;
+    return `https://${process.env.S3_BUCKET}.s3.${process.env.REGION}.amazonaws.com/${Key}`;
+  } catch (error) {
+    throw new Error("Failed to upload image to S3", { cause: error });
+  }
 }
