@@ -29,6 +29,13 @@ export async function uploadImageToS3(
 
     return `https://${process.env.S3_BUCKET}.s3.${process.env.REGION}.amazonaws.com/${Key}`;
   } catch (error) {
-    throw new Error("Failed to upload image to S3", { cause: error });
+    throw {
+      error,
+      message: "Failed to upload image to S3",
+      bucket: process.env.S3_BUCKET,
+      region: process.env.REGION,
+      key: process.env.ACCESS_KEY_ID ? "present" : "missing",
+      secret: process.env.SECRET_ACCESS_KEY ? "present" : "missing",
+    };
   }
 }
