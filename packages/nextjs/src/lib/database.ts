@@ -4,8 +4,12 @@ import { prisma } from "./prisma";
 import { appConfig } from "./appConfig";
 
 // Configuration to switch between databases
-const USE_SUPABASE =
-  process.env.NEXT_PUBLIC_USE_SUPABASE === "true" || !process.env.DATABASE_URL;
+// const USE_SUPABASE =
+//   process.env.NEXT_PUBLIC_USE_SUPABASE === "true" || !process.env.DATABASE_URL;
+// const SALT_DB = appConfig.salt_db;
+
+const USE_SUPABASE = false;
+
 const SALT_DB = appConfig.salt_db;
 
 export interface SaltData {

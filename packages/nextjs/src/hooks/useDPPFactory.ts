@@ -49,19 +49,17 @@ export const useDPPNFTFactory = () => {
       console.log("clone address", cloneAddress);
       const txHash = await client.writeContract(request);
 
-      // const tx = await client.writeContract({
+      // const txHash = await client.writeContract({
       //   abi: FACTORY_ABI,
-      //   address: FACTORY_ADDRESS,
+      //   address: factoryAddress,
       //   functionName: "createNFT",
-      //   account: accounts[0] as `0x${string}`,
+      //   account: account as `0x${string}`,
       //   chain: client.chain,
       //   args: [
       //     formData.title, // name
       //     "DPP_" + plainUidCode, // symbol (or dynamic)
-      //     accounts[0],
-      //     plainUidCode,
-      //     publicJsonMetadata,
-      //     encryptedPrivateMetadata,
+      //     account,
+      //     "",
       //   ],
       // });
       const resultTx = await readClient.waitForTransactionReceipt({

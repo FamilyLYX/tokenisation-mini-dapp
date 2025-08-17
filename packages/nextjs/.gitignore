@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 /generated
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

@@ -8,6 +8,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useFactoryAddress } from "@/constants/factory";
 import { useReadClient } from "@/lib/appConfig";
 import { useAccount } from "wagmi";
+import { PublicClient } from "viem";
 
 export default function Home() {
   const factoryAddress = useFactoryAddress();
@@ -17,7 +18,8 @@ export default function Home() {
   const { push } = useRouter();
   const { data: countOfContracts, isPending } = useQuery({
     queryKey: ["nftMetadata", chain?.id, factoryAddress],
-    queryFn: () => getAllNFTMetadata(readClient, factoryAddress),
+    queryFn: () =>
+      getAllNFTMetadata(readClient as PublicClient, factoryAddress),
     enabled: !!chain?.id && !!factoryAddress,
   });
   return (
