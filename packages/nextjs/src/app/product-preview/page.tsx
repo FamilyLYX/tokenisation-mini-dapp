@@ -35,7 +35,7 @@ export default function ProductPreview() {
       toast.error("Please fill the form first, redirecting to form...");
       push("/form");
     }
-  }, []);
+  }, [push]);
 
   const { mutateAsync: mintDPPToken, isPending: isMinting } = useMutation({
     mutationFn: async ({ dppAddress }: { dppAddress: `0x${string}` }) => {

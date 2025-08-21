@@ -38,7 +38,7 @@ export interface VaultData {
 }
 
 // Helper function to convert Firestore timestamp to Date
-const convertTimestamp = (timestamp: any): Date => {
+const convertTimestamp = (timestamp: Timestamp): Date => {
   if (timestamp instanceof Timestamp) {
     return timestamp.toDate();
   }
