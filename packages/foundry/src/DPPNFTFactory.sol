@@ -22,6 +22,9 @@ contract DPPNFTFactory is Ownable {
     /// @notice List of all deployed DPPNFT clone addresses
     address[] public allDPPs;
 
+    /// @notice Mapping to track deployed DPPNFT clone addresses by creator
+    mapping(address => address[]) public creatorDPPs;
+
     /// @param _implementation The address of the DPPNFT implementation contract to clone
     constructor(address _implementation) {
         if (_implementation == address(0)) {
@@ -38,18 +41,24 @@ contract DPPNFTFactory is Ownable {
     function createNFT(
         string memory name,
         string memory symbol,
-        address initialOwner
+        address initialOwner,
+        string memory metadataId
     ) external returns (address clone) {
         if (initialOwner == address(0)) {
             revert InvalidInitialOwner();
         }
 
         clone = implementation.clone();
-        DPPNFT(payable(clone)).initialize(name, symbol, initialOwner);
+        DPPNFT(payable(clone)).initialize(
+            name,
+            symbol,
+            initialOwner,
+            metadataId
+        );
 
         nftContracts[clone] = true;
         allDPPs.push(clone);
-
+        creatorDPPs[initialOwner].push(clone);
         emit NFTCreated(clone, initialOwner);
     }
 
@@ -57,6 +66,15 @@ contract DPPNFTFactory is Ownable {
     /// @return An array containing addresses of all deployed NFT clones
     function getDeployedDPPs() external view returns (address[] memory) {
         return allDPPs;
+    }
+
+    /// @notice Returns an array of all deployed DPPNFT clone addresses by a creator
+    /// @param creator The address of the creator
+    /// @return An array containing addresses of all deployed NFT clones by the creator
+    function getCreatorDPPs(
+        address creator
+    ) external view returns (address[] memory) {
+        return creatorDPPs[creator];
     }
 
     /// @notice Emitted when a new DPPNFT clone is created

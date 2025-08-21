@@ -4,8 +4,7 @@ pragma solidity ^0.8.17;
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {_LSP4_METADATA_KEY} from "@lukso/lsp4-contracts/contracts/LSP4Constants.sol";
 import {LSP8MintableInitAbstract} from "@lukso/lsp8-contracts/contracts/presets/LSP8MintableInitAbstract.sol";
-import {LSP8IdentifiableDigitalAssetInitAbstract} from
-    "@lukso/lsp8-contracts/contracts/LSP8IdentifiableDigitalAssetInitAbstract.sol";
+import {LSP8IdentifiableDigitalAssetInitAbstract} from "@lukso/lsp8-contracts/contracts/LSP8IdentifiableDigitalAssetInitAbstract.sol";
 import {ILSP8IdentifiableDigitalAsset} from "@lukso/lsp8-contracts/contracts/ILSP8IdentifiableDigitalAsset.sol";
 
 /// @notice Thrown when a caller is not authorized to perform the action
@@ -35,6 +34,7 @@ contract DPPNFT is LSP8MintableInitAbstract {
     /// @dev Internal data key used for storing the UID hash
     bytes32 private constant DPP_UID_HASH_KEY = keccak256("DPP_UID_Hash");
     bytes32 private constant DPP_METADATA_KEY = keccak256("DPP_METADATA");
+    bytes32 private constant METADATA_ID_KEY = keccak256("METADATA_ID");
 
     /// @notice The next token index to be minted
     uint256 public nextTokenIndex;
@@ -46,8 +46,14 @@ contract DPPNFT is LSP8MintableInitAbstract {
      * @param symbol_ Token symbol
      * @param newOwner Owner of the contract
      */
-    function initialize(string memory name_, string memory symbol_, address newOwner) external initializer {
+    function initialize(
+        string memory name_,
+        string memory symbol_,
+        address newOwner,
+        string memory metadataId
+    ) external initializer {
         _initialize(name_, symbol_, newOwner, 0, 0);
+        _setData(METADATA_ID_KEY, bytes(metadataId));
     }
 
     /**
@@ -57,22 +63,49 @@ contract DPPNFT is LSP8MintableInitAbstract {
      * @param publicJsonMetadata The public metadata for the asset, encoded as a JSON string
      * @param uidHash The precomputed UID hash (e.g., keccak256(abi.encodePacked(salt, plainUidCode)))
      */
-    function mintDPP(address to, string memory publicJsonMetadata, bytes32 uidHash) external onlyOwner {
+    function mintDPP(
+        address to,
+        string memory publicJsonMetadata,
+        bytes32 uidHash
+    ) public onlyOwner {
         bytes32 tokenId = bytes32(nextTokenIndex++);
 
         _mint(to, tokenId, true, "0x"); // no additional data
 
-        _setDataForTokenId(tokenId, DPP_METADATA_KEY, bytes(publicJsonMetadata));
+        _setDataForTokenId(
+            tokenId,
+            DPP_METADATA_KEY,
+            bytes(publicJsonMetadata)
+        );
         _setDataForTokenId(tokenId, DPP_UID_HASH_KEY, abi.encode(uidHash));
+    }
+
+    function batchMintDPP(
+        address[] memory to,
+        string[] memory publicJsonMetadata,
+        bytes32[] memory uidHash
+    ) external onlyOwner {
+        for (uint256 i = 0; i < to.length; i++) {
+            mintDPP(to[i], publicJsonMetadata[i], uidHash[i]);
+        }
     }
 
     /**
      * @notice Override standard transfer function to disable normal transfers
      */
-    function transfer(address, address, bytes32, bool, bytes memory)
+    function transfer(
+        address,
+        address,
+        bytes32,
+        bool,
+        bytes memory
+    )
         public
         virtual
-        override(LSP8IdentifiableDigitalAssetInitAbstract, ILSP8IdentifiableDigitalAsset)
+        override(
+            LSP8IdentifiableDigitalAssetInitAbstract,
+            ILSP8IdentifiableDigitalAsset
+        )
     {
         revert TransferNotAllowed();
     }
@@ -99,20 +132,32 @@ contract DPPNFT is LSP8MintableInitAbstract {
             revert NotTokenOwner();
         }
 
-        bytes32 storedHash = abi.decode(_getDataForTokenId(tokenId, DPP_UID_HASH_KEY), (bytes32));
+        bytes32 storedHash = abi.decode(
+            _getDataForTokenId(tokenId, DPP_UID_HASH_KEY),
+            (bytes32)
+        );
 
         if (keccak256(abi.encodePacked(salt, plainUidCode)) != storedHash) {
             revert InvalidUID();
         }
 
-        _setDataForTokenId(tokenId, DPP_UID_HASH_KEY, abi.encodePacked(newUidHash));
+        _setDataForTokenId(
+            tokenId,
+            DPP_UID_HASH_KEY,
+            abi.encodePacked(newUidHash)
+        );
 
         _transfer(msg.sender, to, tokenId, true, data);
     }
 
     // @Notice Override mint function to disable public minting
     // This is to ensure that minting can only be done through the `mintDPP` function and not through the standard minting process.
-    function mint(address, bytes32, bool, bytes memory) public virtual override onlyOwner {
+    function mint(
+        address,
+        bytes32,
+        bool,
+        bytes memory
+    ) public virtual override onlyOwner {
         revert MintingDisabled();
     }
 }
