@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Salt collection rules - only allow server-side access
+    match /salts/{document} {
+      allow read, write: if false; // Only server-side access via Admin SDK
+    }
+    
+    // Vault collection rules - only allow server-side access
+    match /vaults/{document} {
+      allow read, write: if false; // Only server-side access via Admin SDK
+    }
+    
+    // Default rule - deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 
