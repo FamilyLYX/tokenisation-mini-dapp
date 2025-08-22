@@ -26,7 +26,12 @@ export const useDPPNFTFactory = () => {
           functionName: "createNFT",
           account: account as `0x${string}`,
           chain: client.chain,
-          args: [formData.title, formData.title + "_" + plainUidCode, account],
+          args: [
+            formData.title,
+            formData.title + "_" + plainUidCode,
+            account,
+            "",
+          ],
         });
       if (!cloneAddress) {
         toast.error("Failed to simulate NFT creation.");
