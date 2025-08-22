@@ -1,19 +1,14 @@
 import { toast } from "sonner";
-import {
-  FACTORY_ABI,
-  FACTORY_ABI_OLD,
-  useFactoryAddress,
-} from "@/constants/factory";
+import { FACTORY_ABI, useFactoryAddress } from "@/constants/factory";
 import { NFT_ABI } from "@/constants/dpp";
 import { Product } from "@/types";
 import { useAccount, useWalletClient } from "wagmi";
 import { useReadClient } from "@/lib/appConfig";
-import { luksoTestnet } from "viem/chains";
 
 export const useDPPNFTFactory = () => {
   const { data: client } = useWalletClient();
   const readClient = useReadClient();
-  const { address: account, chain } = useAccount();
+  const { address: account } = useAccount();
 
   const factoryAddress = useFactoryAddress();
 
@@ -26,20 +21,12 @@ export const useDPPNFTFactory = () => {
     try {
       const { request, result: cloneAddress } =
         await readClient.simulateContract({
-          abi: chain?.id === luksoTestnet.id ? FACTORY_ABI_OLD : FACTORY_ABI,
+          abi: FACTORY_ABI,
           address: factoryAddress,
           functionName: "createNFT",
           account: account as `0x${string}`,
           chain: client.chain,
-          args:
-            chain?.id === luksoTestnet.id
-              ? [formData.title, formData.title + "_" + plainUidCode, account]
-              : [
-                  formData.title,
-                  formData.title + "_" + plainUidCode,
-                  account,
-                  "",
-                ],
+          args: [formData.title, formData.title + "_" + plainUidCode, account],
         });
       if (!cloneAddress) {
         toast.error("Failed to simulate NFT creation.");
